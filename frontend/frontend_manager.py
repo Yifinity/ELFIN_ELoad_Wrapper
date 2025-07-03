@@ -14,17 +14,18 @@ class FrontendManager(ctk.CTkFrame):
         # shared between both the control and plot frames
         self.selected_load = 0  # Default selected is 0
 
+        # 0 = none, 1 = constant load, 2 = constant current, 3 = profile
         self.load_tests = {
             # Load 1
             0:{
-                "test_type": 0, # 0 = none, 1 = constant load, 2 = constant current 
+                "test_type": 0,
                 "target": 0, # Current/Load Target
                 "extra_params": [] # Extra params for test #3
             },
             1:{
                 "test_type": 0, 
                 "target": 0,
-                "extra_params": []
+                "extra_params": [] # startpoint, current_increment, secs_per_step
             },         
             2:{
                 "test_type": 0,

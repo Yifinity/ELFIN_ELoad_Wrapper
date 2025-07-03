@@ -8,7 +8,7 @@ class TestInfoWidget(ctk.CTkFrame):
         self.grid_rowconfigure((0,1,2,3,5,6,7), weight=1)
 
         self.button_toggle_test = ctk.CTkButton(self, text="Start Test",
-                                                 command=self.toggle_test)
+                                                 command=self.start_stop_test)
         self.button_toggle_test.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")     
 
         self.label_test_info = ctk.CTkLabel(self, text="Test Information")  
@@ -24,14 +24,14 @@ class TestInfoWidget(ctk.CTkFrame):
 
         # start_current and end_current
         self.textbox_target = ctk.CTkEntry(self, placeholder_text="Target Load:", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
-        self.textbox_startpoint = ctk.CTkEntry(self, placeholder_text="Starting Current", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
-        # step_current
-        self.textbox_current_increment = ctk.CTkEntry(self, placeholder_text="Current Increment", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
-        # step_dwell_time
-        self.textbox_secs_per_step = ctk.CTkEntry(self, placeholder_text="Seconds per Step", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
+        self.textbox_target.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
+
+
+        self.textbox_startpoint = ctk.CTkEntry(self, bg_color="green", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
+        self.textbox_current_increment = ctk.CTkEntry(self, bg_color="blue", placeholder_text="Current Increment", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
+        self.textbox_secs_per_step = ctk.CTkEntry(self, bg_color="purple", placeholder_text="Seconds per Step", validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
         
         self.label_test_info.grid_forget() 
-        self.textbox_target.grid_forget()
         self.textbox_startpoint.grid_forget()
         self.textbox_current_increment.grid_forget()
         self.textbox_secs_per_step.grid_forget()
@@ -48,6 +48,24 @@ class TestInfoWidget(ctk.CTkFrame):
             self.button_toggle_test.configure(text="Start Test", 
                                               fg_color="#008e2a")
 
+    def start_stop_test(self):
+        if(self.load_tests[self.master.selected_load]["test_type"] == 0):
+            if(self.check_valid_test()): 
+                self.load_tests[self.master.selected_load]["test_type"] = self.dropdown.get()
+                self.load_tests[self.master.selected_load]["target"] = int(self.textbox_target.get())
+                if(self.load_tests[self.master.selected_load]["test_type"] == "Power Profile"):
+                    self.load_tests[self.master.selected_load]["extra_params"] = [
+                        int(self.textbox_startpoint.get()),
+                        int(self.textbox_current_increment.get()),
+                        int(self.textbox_secs_per_step.get())
+                    ]
+                self.clear_textboxes()
+
+        else:
+            self.load_tests[self.master.selected_load]["test_type"] = 0
+            self.load_tests[self.master.selected_load]["target"] = 0
+            self.load_tests[self.master.selected_load]["extra_params"] = []
+        self.update_test_info(self.master.selected_load)
 
     def update_test_info(self, load_selection):
         self.label_test_info.grid_forget()
@@ -55,38 +73,38 @@ class TestInfoWidget(ctk.CTkFrame):
         self.dropdown.grid_forget()
         self.clear_textboxes()
 
-        # No Test Selected
+        # No test for that specific load
         if(self.load_tests[load_selection]["test_type"] == 0):
-            # Display Selection
             self.label_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="w")
             self.dropdown.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+            self.textbox_target.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
+            
         else:                
             self.label_test_info.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
-            self.label_test_info.configure(text=f"Running: \n {self.load_tests[load_selection]}")
+            self.display_test_info(self.load_tests[load_selection])
+#            self.label_test_info.configure(text=f"Running: \n {self.load_tests[load_selection]}")
         # If test is not empty, that means we're running one
         self.toggle_switch_state(self.load_tests[load_selection]["test_type"] != 0)
         
+    def display_test_info(self, test_info):
+        test_type = test_info["test_type"]
+        test_target = test_info["target"]
+        test_extra_params = test_info["extra_params"] 
 
-
-    def toggle_test(self):
-        if(self.load_tests[self.master.selected_load]["test_type"] == 0):
-            if(self.check_valid_test()): 
-                self.load_tests[self.master.selected_load]["test_type"] = self.dropdown.get()
-                self.load_tests[self.master.selected_load]["target"] = int(self.textbox_target.get())
-                self.clear_textboxes()
-
-                if(self.load_tests[self.master.selected_load]["test_type"] == "Power Profile"):
-                    self.load_tests[self.master.selected_load]["extra_params"] = [
-                        int(self.textbox_startpoint.get()),
-                        int(self.textbox_current_increment.get()),
-                        int(self.textbox_secs_per_step.get())
-                    ]
+        output_string = "Test Type: "
+        if(test_type == "Constant Load" or test_type == "Constant Current"):
+            if(test_type == 1):
+                output_string += "Constant Load"
+            else:
+                output_string += "Constant Current"
+            output_string += f"\n Target: {test_target}"
         else:
-            self.load_tests[self.master.selected_load]["test_type"] = 0
-            self.load_tests[self.master.selected_load]["target"] = 0
-            self.load_tests[self.master.selected_load]["extra_params"] = []
-        self.update_test_info(self.master.selected_load)
-
+            output_string += f"Current Profile: \n"
+            output_string += f"Range: {test_target}-{test_extra_params[0]}A \n"
+            output_string += f"Current Increment: {test_extra_params[1]}\n"
+            output_string += f"Second Per Step: {test_extra_params[2]}"
+        self.label_test_info.configure(text=output_string)
+            
     def clear_textboxes(self):
         self.textbox_target.delete(0, "end")
         self.textbox_startpoint.delete(0, "end")
@@ -107,11 +125,10 @@ class TestInfoWidget(ctk.CTkFrame):
         self.textbox_secs_per_step.grid_forget()
 
         self.textbox_target.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
-
         if selection == "Constant Load":
-            self.textbox_startpoint.configure(placeholder_text="Target Load")
+            self.textbox_startpoint.configure(placeholder_text="Constant Load")
         else:
-            self.textbox_startpoint.configure(placeholder_text="Target Current")
+            self.textbox_startpoint.configure(placeholder_text="Constant Current")
 
         if selection == "Power Profile":
             self.textbox_startpoint.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
