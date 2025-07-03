@@ -2,13 +2,12 @@ import customtkinter as ctk
 import serial
 import threading
 
-
 class BackendManager:
     def __init__(self, main_root):
         print("Backend Initialized")
         self.main = main_root
         self.thread_running = False
-        self.arduino = serial.Serial(port = "COM24", baudrate=115200,
+        self.arduino = serial.Serial(port = "COM3", baudrate=115200,
                                     timeout=0.1)
         self.connected = False;
         self.reading_thread = None
