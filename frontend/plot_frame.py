@@ -92,18 +92,9 @@ class PlotDisplayFrame(ctk.CTkFrame):
         self.canvas_temperature_widget = self.canvas_temperature.get_tk_widget()
         self.canvas_temperature_widget.grid(row=3, column=0,columnspan=3,
                                          padx=10, pady=10, sticky="nsew")
-
-        # self.label_load = ctk.CTkLabel(self, text="Load 1", 
-        #          fg_color="#6551D4", 
-        #          text_color="white", 
-        #          corner_radius=6, 
-        #          width=100, 
-        #          height=30)
-        # self.label_load.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
-
+        
         # Track which lines are toggled
         self.plots_toggled = [False, False, False] 
-
         self.loads = [
             [
                 self.line_L1_voltage,
@@ -121,15 +112,15 @@ class PlotDisplayFrame(ctk.CTkFrame):
                 self.line_L3_temperature
             ]
         ]
-
-
+        self.toggle_plot(0) # enable the first graph on startup.
 
 
     def toggle_plot(self, target):
-        for data in range(3):
-            self.loads[data][target][0].set_data([],[])
+        # Clear the data would go to each of the lines
+        for data_idx in range(3):
+            self.loads[data_idx][target][0].set_data([],[])
+
         self.plots_toggled[target] = not self.plots_toggled[target]
-        
         if target == 0:
             self.button_load1.configure(fg_color="#6551D4") if self.plots_toggled[target] else self.button_load1.configure(fg_color="gray")
         elif target == 1:
@@ -140,19 +131,28 @@ class PlotDisplayFrame(ctk.CTkFrame):
     # Update the plot values based on load selections
     def update_plot_values(self, historical_values):
         if(self.plots_toggled[0]):
-            self.line_L1_voltage[0].set_data(historical_values['time'][-50:], historical_values['L1_voltage'][-50:])
-            self.line_L1_current[0].set_data(historical_values['time'][-50:], historical_values['L1_current'][-50:])
-            self.line_L1_temperature[0].set_data(historical_values['time'][-50:], historical_values['L1_temperature'][-50:]) 
+            try:
+                self.line_L1_voltage[0].set_data(historical_values['time'][-50:], historical_values['L1_voltage'][-50:])
+                self.line_L1_current[0].set_data(historical_values['time'][-50:], historical_values['L1_current'][-50:])
+                self.line_L1_temperature[0].set_data(historical_values['time'][-50:], historical_values['L1_temperature'][-50:]) 
+            except:
+                print("Error while getting voltage")
 
         if(self.plots_toggled[1]):
-            self.line_L2_voltage[0].set_data(historical_values['time'][-50:], historical_values['L2_voltage'][-50:])
-            self.line_L2_current[0].set_data(historical_values['time'][-50:], historical_values['L2_current'][-50:])
-            self.line_L2_temperature[0].set_data(historical_values['time'][-50:], historical_values['L2_temperature'][-50:]) 
+            try:
+                self.line_L2_voltage[0].set_data(historical_values['time'][-50:], historical_values['L2_voltage'][-50:])
+                self.line_L2_current[0].set_data(historical_values['time'][-50:], historical_values['L2_current'][-50:])
+                self.line_L2_temperature[0].set_data(historical_values['time'][-50:], historical_values['L2_temperature'][-50:]) 
+            except:
+                print("Error while getting current")
 
         if(self.plots_toggled[2]):
-            self.line_L3_voltage[0].set_data(historical_values['time'][-50:], historical_values['L3_voltage'][-50:])
-            self.line_L3_current[0].set_data(historical_values['time'][-50:], historical_values['L3_current'][-50:])
-            self.line_L3_temperature[0].set_data(historical_values['time'][-50:], historical_values['L3_temperature'][-50:]) 
+            try:
+                self.line_L3_voltage[0].set_data(historical_values['time'][-50:], historical_values['L3_voltage'][-50:])
+                self.line_L3_current[0].set_data(historical_values['time'][-50:], historical_values['L3_current'][-50:])
+                self.line_L3_temperature[0].set_data(historical_values['time'][-50:], historical_values['L3_temperature'][-50:]) 
+            except:
+                print("Error while getting temperature")
 
         # Adjust axes for voltage
         self.ax_voltage.relim()
@@ -170,3 +170,8 @@ class PlotDisplayFrame(ctk.CTkFrame):
         self.canvas_voltage.draw_idle()
         self.canvas_current.draw_idle()
         self.canvas_temperature.draw_idle()
+
+        # Force Tkinter canvas to update immediately for new plots and redraws
+        self.canvas_voltage.flush_events()
+        self.canvas_current.flush_events()
+        self.canvas_temperature.flush_events()

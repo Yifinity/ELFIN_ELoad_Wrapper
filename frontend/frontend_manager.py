@@ -56,5 +56,3 @@ class FrontendManager(ctk.CTkFrame):
 
     def update_selected_load(self, target_load):
         self.selected_load = target_load
-        self.plot_panel_frame.update_selected_load(target_load)
-

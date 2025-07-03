@@ -50,9 +50,9 @@ class BackendManager:
     def run(self):
         while(self.thread_running):
             if(self.connected):
-                self.main.after(0, self.connection_callback(True))
+                self.main.after(0, lambda: self.connection_callback(True))
             else:
-                self.main.after(0, self.connection_callback(False))
+                self.main.after(0, lambda: self.connection_callback(False))
             self.input_msg = self.arduino.readline() 
          
             if(self.input_msg):
@@ -68,11 +68,11 @@ class BackendManager:
                     continue
 
                 self.update_history(self.parsed_values)
-                self.main.after(0, self.plot_callback(self.historical_values))
+                self.main.after(0, lambda: self.plot_callback(self.historical_values))
 
 
                 for data_callback in self.data_callbacks:
-                    self.main.after(0, data_callback(self.parsed_values))
+                    self.main.after(0, lambda: data_callback(self.parsed_values))
                 
             else:
                 self.consecutive_failed_instances += 1

@@ -39,7 +39,6 @@ class TestManagerWidget(ctk.CTkFrame):
 
     def select_load(self, selected_load):
         self.test_info_widget.update_test_info(selected_load)
-
         if(self.selected_load == 0):
             self.button_load1.configure(fg_color="gray")
         elif(self.selected_load == 1):
