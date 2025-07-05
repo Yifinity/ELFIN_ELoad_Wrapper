@@ -154,19 +154,15 @@ class PlotDisplayFrame(ctk.CTkFrame):
             except:
                 print("Error while getting temperature")
 
-        # Adjust axes for voltage
         self.ax_voltage.relim()
         self.ax_voltage.autoscale_view()
 
-        # Adjust axes for current
         self.ax_current.relim()
         self.ax_current.autoscale_view()
 
-        # Adjust axes for temperature
         self.ax_temperature.relim()
         self.ax_temperature.autoscale_view()
 
-        # Redraw canvases
         self.canvas_voltage.draw_idle()
         self.canvas_current.draw_idle()
         self.canvas_temperature.draw_idle()
