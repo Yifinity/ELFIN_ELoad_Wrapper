@@ -1,9 +1,6 @@
 import customtkinter as ctk
 
 class PortSelectorWidget(ctk.CTkFrame):
-    """
-    A CustomTkinter widget for selecting and managing serial port connections.
-    """
     def __init__(self, master, backend_manager, **kwargs):
         super().__init__(master, **kwargs)
         self.backend = backend_manager
@@ -16,11 +13,9 @@ class PortSelectorWidget(ctk.CTkFrame):
         self.grid_columnconfigure(2, weight=1)
         self.grid_columnconfigure(3, weight=1)
 
-        # --- Port Selection Label ---
         self.port_label = ctk.CTkLabel(self, text="Serial Port:")
         self.port_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        # --- Port Option Menu (Dropdown) ---
         self.port_variable = ctk.StringVar()
         self.port_option_menu = ctk.CTkOptionMenu(
             self,
@@ -30,7 +25,6 @@ class PortSelectorWidget(ctk.CTkFrame):
         self.port_option_menu.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         self._populate_ports() # Initial population of ports
 
-        # --- Refresh Ports Button ---
         self.refresh_button = ctk.CTkButton(
             self,
             text="Refresh",
@@ -75,22 +69,15 @@ class PortSelectorWidget(ctk.CTkFrame):
         print(f"Ports refreshed. Current selection: {self.port_variable.get()}")
 
     def _on_port_selected(self, selected_port):
-        """
-        Callback triggered when a new port is selected from the dropdown.
-        """
         print(f"Port selected: {selected_port}")
         # You can add logic here if you want to automatically connect on selection
         # For now, connection is handled by the 'Connect' button.
 
     def _toggle_connection(self):
-        """
-        Handles the logic for connecting or disconnecting from the serial port.
-        """
         if self.backend.connected:
             # Disconnect logic
             print("Attempting to disconnect...")
             self.backend.stop_reading_thread()
-            # The _update_connection_status_ui will be called by backend's callback
         else:
             # Connect logic
             selected_port = self.port_variable.get()
@@ -108,10 +95,6 @@ class PortSelectorWidget(ctk.CTkFrame):
                 print(f"Connection failed to {selected_port}.")
 
     def _update_connection_status_ui(self, is_connected):
-        """
-        Updates the UI elements (status label, button text) based on connection status.
-        This method is called by the BackendManager's connection callback.
-        """
         if is_connected:
             self.status_label.configure(text=f"Status: Connected to {self.backend.port_name}", text_color="green")
             self.connect_button.configure(text="Disconnect", fg_color="red")
