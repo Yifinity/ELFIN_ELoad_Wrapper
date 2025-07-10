@@ -16,10 +16,6 @@ class ControlPanelFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=9)
         self.grid_rowconfigure(2, weight=6)
 
-        self.connection_widget = SerialConnectionWidget(self)
-        self.connection_widget.grid(row=0, column=0, padx=10, pady=5,
-                                    sticky="nsew")
-
         self.test_manager_widget = TestManagerWidget(self, self.selected_load,
                                                      self.load_tests,
                                                      self.update_load_callback)

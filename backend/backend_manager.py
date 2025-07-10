@@ -2,6 +2,8 @@ import customtkinter as ctk
 import serial
 import threading
 import serial.tools.list_ports # Import to list available serial ports
+import json # Import for JSON operations
+import os   # Import for path operations
 
 class BackendManager:
     def __init__(self, main_root):
@@ -20,6 +22,8 @@ class BackendManager:
         # Array to hold various callbacks required for data processing
         self.data_callbacks = []
         self.consecutive_failed_instances = 0 # Num of consecutive failed reads
+        
+        # Initialize historical_values as empty lists for a fresh start every run
         self.historical_values = {
             "time": [],
             "L1_voltage": [],
@@ -36,6 +40,23 @@ class BackendManager:
         } 
 
         self.write_lock = threading.Lock() # Required for concurrent writes
+        self.history_file_path = "app_history.json" # Define a file path for history
+
+
+    def save_history_to_file(self):
+        """Saves the current historical data to a JSON file.
+        This will overwrite the file with the current session's data."""
+        if not self.historical_values or not self.historical_values.get("time"):
+            print("No data to save to history file.")
+            return
+
+        try:
+            with open(self.history_file_path, 'w') as f: # 'w' mode correctly overwrites
+                json.dump(self.historical_values, f, indent=4)
+            print(f"Historical data saved to {self.history_file_path}")
+        except Exception as e:
+            print(f"Error saving history to file: {e}")
+
 
     def set_connection_callback(self, callback):
         """Sets the callback function for connection status updates."""
@@ -61,13 +82,6 @@ class BackendManager:
         return available_ports
 
     def connect_to_port(self, port_name):
-        """
-        Attempts to establish a serial connection to the specified port.
-        Args:
-            port_name (str): The name of the serial port to connect to (e.g., "COM3").
-        Returns:
-            bool: True if connection is successful, False otherwise.
-        """
         if self.arduino and self.arduino.is_open:
             self.arduino.close() # Close existing connection if any
             self.connected = False
@@ -90,10 +104,6 @@ class BackendManager:
             return False
 
     def run(self):
-        """
-        The main loop for reading data from the serial port.
-        This runs on a separate thread.
-        """
         while self.thread_running:
             if not self.connected or not self.arduino or not self.arduino.is_open:
                 # If not connected or arduino object is not ready, wait a bit and continue
@@ -110,7 +120,6 @@ class BackendManager:
                     self.consecutive_failed_instances = 0 # Reset the failed instances
                     self.latest_message = self.input_msg.decode('utf-8', errors='replace').strip()
                     
-                    # print(f'Message Read: {self.latest_message}');   
                     self.parsed_values = self.parse_message(self.latest_message)
                     if self.parsed_values is None:
                         continue
@@ -124,15 +133,13 @@ class BackendManager:
                     
                 else:
                     self.consecutive_failed_instances += 1
-                    if self.consecutive_failed_instances >= 300:
-                        print("Failed to read data for 5 consecutive times. Disconnecting.")
+                    # Increased threshold for consecutive failed instances for robustness
+                    if self.consecutive_failed_instances >= 5000: # Approx 500 seconds at 100ms delay
+                        print("Failed to read data for 5000 consecutive times. Disconnecting.")
                         self.connected = False
                         if self.connection_callback:
                             self.main.after(0, lambda: self.connection_callback(False))
-                        # Optionally, you might want to close the serial port here
-                        # self.stop_reading_thread() # This would stop the thread entirely
-                    # print("Nothing was read") # Keep this for debugging if needed
-
+                        self.stop_reading_thread() # Stop the thread entirely on prolonged failure
             except serial.SerialException as e:
                 print(f"Serial communication error: {e}")
                 self.connected = False
@@ -171,13 +178,6 @@ class BackendManager:
 
 
     def parse_message(self, message):
-        """
-        Parses a comma-separated string message into a list of values.
-        Args:
-            message (str): The raw string message from the serial port.
-        Returns:
-            list: A list of string values, or None if parsing fails.
-        """
         try:
             values = message.split(',')
             return values
@@ -186,17 +186,12 @@ class BackendManager:
             return None
 
     def begin_reading_thread(self):
-        """
-        Starts the serial reading thread if a connection is established.
-        """
         if self.arduino and self.arduino.is_open:
             if not self.thread_running: # Only start if not already running
                 self.thread_running = True
                 self.reading_thread = threading.Thread(target=self.run, daemon=True)
                 self.reading_thread.start()
                 print("Data Processing Thread Started")
-                # The connection_callback is already handled in connect_to_port
-                # self.main.after(0, self.connection_callback(True)) 
             else:
                 print("Reading thread is already running.")
         else:
@@ -206,14 +201,14 @@ class BackendManager:
 
 
     def stop_reading_thread(self):
-        """
-        Stops the serial reading thread and closes the serial connection.
-        """
         self.thread_running = False
         if self.reading_thread and self.reading_thread.is_alive():
             self.reading_thread.join(timeout=1) # Waits for thread to finish
             if self.reading_thread.is_alive():
                 print("Warning: Reading thread did not terminate gracefully.")
+
+        # Save history before closing
+        self.save_history_to_file()
 
         # Now close the arduino
         if self.arduino and self.arduino.is_open:
@@ -228,11 +223,6 @@ class BackendManager:
         print("Serial Reading Thread Stopped") 
 
     def send_command(self, command):
-        """
-        Sends a command string to the connected serial port.
-        Args:
-            command (str): The command string to send.
-        """
         if self.arduino and self.arduino.is_open:
             with self.write_lock:
                 try:

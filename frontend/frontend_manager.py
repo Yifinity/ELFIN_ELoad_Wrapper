@@ -61,7 +61,9 @@ class FrontendManager(ctk.CTkFrame):
         # However, since PortSelectorWidget already sets this, you might need to chain them
         # or have PortSelectorWidget pass the status along if other widgets need it directly.
         # For now, I'll keep the original line as it might be used by ControlPanelFrame for other purposes.
-        self.backend.set_connection_callback(self.control_panel_frame.update_connection_status)
+        #self.backend.set_connection_callback(self.control_panel_frame.update_connection_status)
+        
+        #Note that, if we want the control frame to also listen, add it in the init
         self.backend.add_data_callback(self.control_panel_frame.update_data_table)
         self.backend.set_plot_callback(self.plot_panel_frame.update_plot_values)
             
