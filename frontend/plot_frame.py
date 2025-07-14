@@ -132,25 +132,25 @@ class PlotDisplayFrame(ctk.CTkFrame):
     def update_plot_values(self, historical_values):
         if(self.plots_toggled[0]):
             try:
-                self.line_L1_voltage[0].set_data(historical_values['time'][-50:], historical_values['L1_voltage'][-50:])
-                self.line_L1_current[0].set_data(historical_values['time'][-50:], historical_values['L1_current'][-50:])
-                self.line_L1_temperature[0].set_data(historical_values['time'][-50:], historical_values['L1_temperature'][-50:]) 
+                self.line_L1_voltage[0].set_data(historical_values['time'], historical_values['L1_voltage'])
+                self.line_L1_current[0].set_data(historical_values['time'], historical_values['L1_current'])
+                self.line_L1_temperature[0].set_data(historical_values['time'], historical_values['L1_temperature']) 
             except:
                 print("Error while getting voltage")
 
         if(self.plots_toggled[1]):
             try:
-                self.line_L2_voltage[0].set_data(historical_values['time'][-50:], historical_values['L2_voltage'][-50:])
-                self.line_L2_current[0].set_data(historical_values['time'][-50:], historical_values['L2_current'][-50:])
-                self.line_L2_temperature[0].set_data(historical_values['time'][-50:], historical_values['L2_temperature'][-50:]) 
+                self.line_L2_voltage[0].set_data(historical_values['time'], historical_values['L2_voltage'])
+                self.line_L2_current[0].set_data(historical_values['time'], historical_values['L2_current'])
+                self.line_L2_temperature[0].set_data(historical_values['time'], historical_values['L2_temperature']) 
             except:
                 print("Error while getting current")
 
         if(self.plots_toggled[2]):
             try:
-                self.line_L3_voltage[0].set_data(historical_values['time'][-50:], historical_values['L3_voltage'][-50:])
-                self.line_L3_current[0].set_data(historical_values['time'][-50:], historical_values['L3_current'][-50:])
-                self.line_L3_temperature[0].set_data(historical_values['time'][-50:], historical_values['L3_temperature'][-50:]) 
+                self.line_L3_voltage[0].set_data(historical_values['time'], historical_values['L3_voltage'])
+                self.line_L3_current[0].set_data(historical_values['time'], historical_values['L3_current'])
+                self.line_L3_temperature[0].set_data(historical_values['time'], historical_values['L3_temperature']) 
             except:
                 print("Error while getting temperature")
 

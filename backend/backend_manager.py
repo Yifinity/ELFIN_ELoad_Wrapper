@@ -202,6 +202,7 @@ class BackendManager:
 
         # Now close the arduino
         if self.arduino and self.arduino.is_open:
+            self.send_command("-1") # Disconnect char
             self.arduino.close()
             print("Serial Connection Closed")
             self.connected = False

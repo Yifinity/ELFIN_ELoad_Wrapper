@@ -31,7 +31,7 @@ class TestInfoWidget(ctk.CTkFrame):
 
         # start_current and end_current
         self.label_target = ctk.CTkLabel(self, text="Target:")
-        self.textbox_target = ctk.CTkEntry(self, validate="key", validatecommand=(self.register(lambda val: val.isdigit() or val == ""), "%P")) 
+        self.textbox_target = ctk.CTkEntry(self, validate="key", validatecommand=(self.register(lambda val: val.replace('.', '', 1).isdigit() or val == ""), "%P"))
         # self.textbox_target.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
 
         self.label_startpoint = ctk.CTkLabel(self, text="Starting Current")
@@ -65,9 +65,19 @@ class TestInfoWidget(ctk.CTkFrame):
         # If we have no current tests
         if(self.load_tests[self.master.selected_load]["test_type"] == 0):
             try:
+
                 self.load_tests[self.master.selected_load]["test_type"] = self.dropdown.get()
-                self.load_tests[self.master.selected_load]["target"] = int(self.textbox_target.get())
+                target_value = float(self.textbox_target.get())
+                if target_value > 5:
+                    raise ValueError("Target current cannot exceed 5A")
+                self.load_tests[self.master.selected_load]["target"] = target_value
+
                 if(self.load_tests[self.master.selected_load]["test_type"] == "Power Profile"):
+                    startpoint = int(self.textbox_startpoint.get()),
+    
+                    if startpoint > 5:
+                        raise ValueError("Start Point Current cannot exceed 5A")
+                    
                     self.load_tests[self.master.selected_load]["extra_params"] = [
                         int(self.textbox_startpoint.get()),
                         int(self.textbox_current_increment.get()),
@@ -76,6 +86,7 @@ class TestInfoWidget(ctk.CTkFrame):
                 output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},'
                 output_command += f'{self.textbox_target.get()},{self.textbox_startpoint.get()},{self.textbox_current_increment.get()},'
                 output_command += f'{self.textbox_secs_per_step.get()}'
+                output_command += '>' # End signal
                 self.backend.send_command(output_command)
                 self.update_test_info(self.master.selected_load)
                 self.clear_textboxes()
@@ -89,7 +100,11 @@ class TestInfoWidget(ctk.CTkFrame):
             self.load_tests[self.master.selected_load]["test_type"] = 0
             self.load_tests[self.master.selected_load]["target"] = 0
             self.load_tests[self.master.selected_load]["extra_params"] = []
+            output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},0,,,>' # End command
+            
+            self.backend.send_command(output_command)
             self.update_test_info(self.master.selected_load)
+ 
 
     def check_valid_test(self, inputs):
         if(inputs[0] == ''): # Empty test
