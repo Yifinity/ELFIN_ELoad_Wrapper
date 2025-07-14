@@ -36,14 +36,12 @@ class FrontendManager(ctk.CTkFrame):
             }
         }
 
-        # --- New: Instantiate and place the PortSelectorWidget ---
         self.port_selector_widget = PortSelectorWidget(self, self.backend)
         self.port_selector_widget.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
-        # Use columnspan=2 to make it span across both columns (control and plot)
-        # Place it in row 0, which is configured to not expand (weight=0)
-
+  
         # Controls/Data panels (now in row 1)
         self.control_panel_frame = ControlPanelFrame(self,
+                                                     self.backend, 
                                                      self.selected_load,
                                                      self.load_tests,
                                                      self.update_selected_load)
@@ -53,24 +51,10 @@ class FrontendManager(ctk.CTkFrame):
                                                  selected_load=self.selected_load)
         self.plot_panel_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
-        # Update serial connection status
-        # The PortSelectorWidget now handles setting the connection callback to its own UI update method.
-        # You might still want to pass the connection status to other widgets if they need it.
-        # For example, if ControlPanelFrame needs to know connection status, you'd add a method there:
-        # self.backend.set_connection_callback(self.control_panel_frame.update_connection_status)
-        # However, since PortSelectorWidget already sets this, you might need to chain them
-        # or have PortSelectorWidget pass the status along if other widgets need it directly.
-        # For now, I'll keep the original line as it might be used by ControlPanelFrame for other purposes.
-        #self.backend.set_connection_callback(self.control_panel_frame.update_connection_status)
-        
-        #Note that, if we want the control frame to also listen, add it in the init
         self.backend.add_data_callback(self.control_panel_frame.update_data_table)
         self.backend.set_plot_callback(self.plot_panel_frame.update_plot_values)
             
     def update_message(self, message):
-        # This method seems to be for a data_label that is not defined in this class.
-        # If you have a data_label in FrontendManager, ensure it's initialized.
-        # self.data_label.configure(text=f"Data Received: {message}")
         pass # Placeholder or remove if not used
 
     def update_selected_load(self, target_load):

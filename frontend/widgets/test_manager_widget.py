@@ -3,8 +3,9 @@ from frontend.widgets.test_info_widget import TestInfoWidget
 
 # Widget with three buttons to select between loads
 class TestManagerWidget(ctk.CTkFrame):
-    def __init__(self, master, selected_load, load_tests, update_load_callback):
+    def __init__(self, master, backend, selected_load, load_tests, update_load_callback):
         super().__init__(master)
+        self.backend = backend
         self.selected_load = selected_load
         self.load_tests = load_tests
         self.update_load_callback = update_load_callback
@@ -31,7 +32,7 @@ class TestManagerWidget(ctk.CTkFrame):
         self.button_load3.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
 
-        self.test_info_widget = TestInfoWidget(self, self.load_tests)
+        self.test_info_widget = TestInfoWidget(self, self.backend, self.load_tests)
         self.test_info_widget.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
         
         self.loads = [self.button_load1, self.button_load2, self.button_load3]

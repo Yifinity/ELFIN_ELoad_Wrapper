@@ -1,9 +1,10 @@
 import customtkinter as ctk
 
 class TestInfoWidget(ctk.CTkFrame):
-    def __init__(self, master, load_tests):
+    def __init__(self, master, backend, load_tests):
         super().__init__(master)
         self.load_tests = load_tests 
+        self.backend = backend
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=3)
 
@@ -61,16 +62,9 @@ class TestInfoWidget(ctk.CTkFrame):
                                               fg_color="#008e2a")
 
     def start_stop_test(self):
+        # If we have no current tests
         if(self.load_tests[self.master.selected_load]["test_type"] == 0):
-            inputs = [
-                self.dropdown.get(),
-                self.textbox_target.get(),
-                self.textbox_startpoint.get(),
-                self.textbox_current_increment.get(),
-                self.textbox_secs_per_step.get()
-            ]
-
-            if(self.check_valid_test(inputs)): 
+            try:
                 self.load_tests[self.master.selected_load]["test_type"] = self.dropdown.get()
                 self.load_tests[self.master.selected_load]["target"] = int(self.textbox_target.get())
                 if(self.load_tests[self.master.selected_load]["test_type"] == "Power Profile"):
@@ -79,22 +73,38 @@ class TestInfoWidget(ctk.CTkFrame):
                         int(self.textbox_current_increment.get()),
                         int(self.textbox_secs_per_step.get())
                     ]
+                output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},'
+                output_command += f'{self.textbox_target.get()},{self.textbox_startpoint.get()},{self.textbox_current_increment.get()},'
+                output_command += f'{self.textbox_secs_per_step.get()}'
+                self.backend.send_command(output_command)
+                self.update_test_info(self.master.selected_load)
                 self.clear_textboxes()
+                
+            except:
+                print("Test Input Error")
+                return
+
+
         else:
             self.load_tests[self.master.selected_load]["test_type"] = 0
             self.load_tests[self.master.selected_load]["target"] = 0
             self.load_tests[self.master.selected_load]["extra_params"] = []
-        self.update_test_info(self.master.selected_load)
+            self.update_test_info(self.master.selected_load)
 
     def check_valid_test(self, inputs):
         if(inputs[0] == ''): # Empty test
             return False        
     
-        if(inputs[1] == ''): # Nonexistant target
+        if(not inputs[1].isdigit()): # Nonexistent target
             return False
         
-        if(inputs[0] == "Constant Load"):
-            return True
+        if(inputs[0] == "Current Profile"):
+            if(not inputs[2].isdigit() or not inputs[3].isdigit() or not inputs[4].isdigit()):
+                return False
+
+        return True
+        
+
 
 
     def update_test_info(self, load_selection):

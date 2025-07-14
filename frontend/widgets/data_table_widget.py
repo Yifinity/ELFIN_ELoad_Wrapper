@@ -11,18 +11,18 @@ class DataTableWidget(ctk.CTkFrame):
                         corner_radius=5, 
                         text_color="white")
         self.data_load_label.grid(row=0, column=0, padx=10, pady=5, sticky="nsew")
-        self.data_current_label = ctk.CTkLabel(self, text="Current: ", text_color="white")
+        self.data_current_label = ctk.CTkLabel(self, text="Current: ", text_color="white", font=ctk.CTkFont(weight="bold"))
         self.data_current_label.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
-        self.data_voltage_label = ctk.CTkLabel(self, text="Voltage:", text_color="white")
+        self.data_voltage_label = ctk.CTkLabel(self, text="Voltage:", text_color="white", font=ctk.CTkFont(weight="bold"))
         self.data_voltage_label.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
-        self.data_temp_label = ctk.CTkLabel(self, text="Temperature:", text_color="white")
+        self.data_temp_label = ctk.CTkLabel(self, text="Temperature:", text_color="white", font=ctk.CTkFont(weight="bold"))
         self.data_temp_label.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
-        self.data_setting_label = ctk.CTkLabel(self, text="Setting:", text_color="white")
+        self.data_setting_label = ctk.CTkLabel(self, text="Setting:", text_color="white", font=ctk.CTkFont(weight="bold"))
         self.data_setting_label.grid(row=4, column=0, padx=10, pady=5, sticky="nsew")
 
         self.data_load1 = ctk.CTkLabel(self, text="Load 1: ", 
-                        corner_radius=5, 
-                        text_color="white")
+                corner_radius=5, 
+                text_color="white")
         self.data_load1.grid(row=0, column=1, padx=10, pady=5, sticky="nsew")
         self.load1_current = ctk.CTkLabel(self, text="0A", text_color="white")
         self.load1_current.grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
@@ -34,8 +34,8 @@ class DataTableWidget(ctk.CTkFrame):
         self.load1_setting.grid(row=4, column=1, padx=10, pady=5, sticky="nsew")
 
         self.data_load2 = ctk.CTkLabel(self, text="Load 2: ", 
-                        corner_radius=5, 
-                        text_color="white")
+                corner_radius=5, 
+                text_color="white")
         self.data_load2.grid(row=0, column=2, padx=10, pady=5, sticky="nsew")
         self.load2_current = ctk.CTkLabel(self, text="0", text_color="white")
         self.load2_current.grid(row=1, column=2, padx=10, pady=5, sticky="nsew")
@@ -47,8 +47,8 @@ class DataTableWidget(ctk.CTkFrame):
         self.load2_setting.grid(row=4, column=2, padx=10, pady=5, sticky="nsew")
 
         self.data_load3 = ctk.CTkLabel(self, text="Load 3: ", 
-                        corner_radius=5, 
-                        text_color="white")
+                corner_radius=5, 
+                text_color="white")
         self.data_load3.grid(row=0, column=3, padx=10, pady=5, sticky="nsew")
         self.load3_current = ctk.CTkLabel(self, text="0", text_color="white")
         self.load3_current.grid(row=1, column=3, padx=10, pady=5, sticky="nsew")

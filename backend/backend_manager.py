@@ -44,8 +44,6 @@ class BackendManager:
 
 
     def save_history_to_file(self):
-        """Saves the current historical data to a JSON file.
-        This will overwrite the file with the current session's data."""
         if not self.historical_values or not self.historical_values.get("time"):
             print("No data to save to history file.")
             return
@@ -59,23 +57,15 @@ class BackendManager:
 
 
     def set_connection_callback(self, callback):
-        """Sets the callback function for connection status updates."""
         self.connection_callback = callback
 
     def add_data_callback(self, callback):
-        """Adds a callback function to receive parsed data updates."""
         self.data_callbacks.append(callback)
 
     def set_plot_callback(self, callback):
-        """Sets the callback function for plot data updates."""
         self.plot_callback = callback
 
     def list_available_ports(self):
-        """
-        Lists all available serial ports.
-        Returns:
-            list: A list of strings, where each string is the name of an available serial port.
-        """
         ports = serial.tools.list_ports.comports()
         available_ports = [port.device for port in ports]
         print(f"Available ports: {available_ports}")
@@ -219,7 +209,6 @@ class BackendManager:
                 self.main.after(0, lambda: self.connection_callback(False))
         else:
             print("No active serial connection to close.")
-            
         print("Serial Reading Thread Stopped") 
 
     def send_command(self, command):
