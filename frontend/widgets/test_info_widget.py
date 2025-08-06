@@ -122,7 +122,7 @@ class TestInfoWidget(ctk.CTkFrame):
         import csv
         self.csv_writer = csv.writer(self.csv_file)
         # Write header
-        self.csv_writer.writerow(["timestamp", "L1_voltage", "L1_current", "L1_temperature", "L2_voltage", "L2_current", "L2_temperature", "L3_voltage", "L3_current", "L3_temperature"])
+        self.csv_writer.writerow(["timestamp", "L1_temperature", "L2_temperature", "L3_temperature", "L1_current", "L2_current", "L3_current", "L1_voltage", "L2_voltage","L3_voltage", "L1_thermistor", "L2_thermistor", "L3_thermistor"])
         self.logging_active = True
         # Register callback to backend
         self.backend.add_data_callback(self.csv_data_callback)
@@ -137,7 +137,7 @@ class TestInfoWidget(ctk.CTkFrame):
 
     def csv_data_callback(self, parsed_values):
         import datetime
-        if self.logging_active and len(parsed_values) == 9:
+        if self.logging_active and len(parsed_values) == 12:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
             self.csv_writer.writerow([timestamp] + parsed_values)
  
