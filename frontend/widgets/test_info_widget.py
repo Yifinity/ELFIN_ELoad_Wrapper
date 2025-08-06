@@ -1,6 +1,8 @@
 import customtkinter as ctk
 
 class TestInfoWidget(ctk.CTkFrame):
+    import csv
+
     def __init__(self, master, backend, load_tests):
         super().__init__(master)
         self.load_tests = load_tests 
@@ -9,6 +11,12 @@ class TestInfoWidget(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=3)
 
         self.grid_rowconfigure((0,1,2,3,4,5,6,7), weight=1)
+
+        # CSV logging attributes
+        self.csv_file = None
+        self.csv_writer = None
+        self.logging_active = False
+        self.current_test_load = None
 
         self.button_toggle_test = ctk.CTkButton(self, text="Start Test",
                                      command=self.start_stop_test)
@@ -65,7 +73,6 @@ class TestInfoWidget(ctk.CTkFrame):
         # If we have no current tests
         if(self.load_tests[self.master.selected_load]["test_type"] == 0):
             try:
-
                 self.load_tests[self.master.selected_load]["test_type"] = self.dropdown.get()
                 target_value = float(self.textbox_target.get())
                 if target_value > 5:
@@ -73,11 +80,9 @@ class TestInfoWidget(ctk.CTkFrame):
                 self.load_tests[self.master.selected_load]["target"] = target_value
 
                 if(self.load_tests[self.master.selected_load]["test_type"] == "Power Profile"):
-                    startpoint = int(self.textbox_startpoint.get()),
-    
+                    startpoint = int(self.textbox_startpoint.get())
                     if startpoint > 5:
                         raise ValueError("Start Point Current cannot exceed 5A")
-                    
                     self.load_tests[self.master.selected_load]["extra_params"] = [
                         int(self.textbox_startpoint.get()),
                         int(self.textbox_current_increment.get()),
@@ -90,20 +95,51 @@ class TestInfoWidget(ctk.CTkFrame):
                 self.backend.send_command(output_command)
                 self.update_test_info(self.master.selected_load)
                 self.clear_textboxes()
-                
-            except:
-                print("Test Input Error")
-                return
 
+                # --- CSV Logging: Start ---
+                self.start_csv_logging(self.master.selected_load)
+            except Exception as e:
+                print(f"Test Input Error: {e}")
+                return
 
         else:
             self.load_tests[self.master.selected_load]["test_type"] = 0
             self.load_tests[self.master.selected_load]["target"] = 0
             self.load_tests[self.master.selected_load]["extra_params"] = []
             output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},0,,,>' # End command
-            
             self.backend.send_command(output_command)
             self.update_test_info(self.master.selected_load)
+
+            # --- CSV Logging: Stop ---
+            self.stop_csv_logging()
+
+    def start_csv_logging(self, load_idx):
+        import datetime
+        self.current_test_load = load_idx
+        filename = f"test_load{load_idx}_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
+        self.csv_file = open(filename, "w", newline="")
+        self.csv_writer = self.csv_file
+        import csv
+        self.csv_writer = csv.writer(self.csv_file)
+        # Write header
+        self.csv_writer.writerow(["timestamp", "L1_voltage", "L1_current", "L1_temperature", "L2_voltage", "L2_current", "L2_temperature", "L3_voltage", "L3_current", "L3_temperature"])
+        self.logging_active = True
+        # Register callback to backend
+        self.backend.add_data_callback(self.csv_data_callback)
+
+    def stop_csv_logging(self):
+        self.logging_active = False
+        if self.csv_file:
+            self.csv_file.close()
+            self.csv_file = None
+        # Remove callback from backend (optional, not implemented here)
+        # You may want to implement a remove_data_callback in backend if needed
+
+    def csv_data_callback(self, parsed_values):
+        import datetime
+        if self.logging_active and len(parsed_values) == 9:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+            self.csv_writer.writerow([timestamp] + parsed_values)
  
 
     def check_valid_test(self, inputs):

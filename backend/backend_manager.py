@@ -29,15 +29,18 @@ class BackendManager:
             "L1_voltage": [],
             "L1_current": [],
             "L1_temperature": [],
-            
+            "L1_thermistor": [],
+
             "L2_voltage": [],
             "L2_current": [],
             "L2_temperature": [],
-            
+            "L2_thermistor": [],
+
             "L3_voltage": [],
             "L3_current": [],
             "L3_temperature": [],
-        } 
+            "L3_thermistor": [],
+        }
 
         self.write_lock = threading.Lock() # Required for concurrent writes
         self.history_file_path = "app_history.json" # Define a file path for history
@@ -146,25 +149,30 @@ class BackendManager:
 
     def update_history(self, parsed_values):
         """Updates the historical data dictionary with new parsed values."""
-        if len(parsed_values) == 9:
+        if len(parsed_values) == 12:
             try:
                 # Append time, ensuring it's sequential
                 self.historical_values["time"].append(len(self.historical_values["time"])) 
                 self.historical_values["L1_current"].append(float(parsed_values[3]))
                 self.historical_values["L1_voltage"].append(float(parsed_values[6]))
                 self.historical_values["L1_temperature"].append(float(parsed_values[0]))
+                self.historical_values["L1_thermistor"].append(float(parsed_values[9]))
+
 
                 self.historical_values["L2_current"].append(float(parsed_values[4]))
                 self.historical_values["L2_voltage"].append(float(parsed_values[7]))
                 self.historical_values["L2_temperature"].append(float(parsed_values[1]))
+                self.historical_values["L2_thermistor"].append(float(parsed_values[10]))
 
                 self.historical_values["L3_current"].append(float(parsed_values[5]))
                 self.historical_values["L3_voltage"].append(float(parsed_values[8]))
                 self.historical_values["L3_temperature"].append(float(parsed_values[2]))
+                self.historical_values["L3_thermistor"].append(float(parsed_values[11]))
+
             except ValueError as e:
                 print(f"Error converting parsed values to float: {e}. Message: {parsed_values}")
         else:
-            print(f"Invalid message format received. Expected 9 values, got {len(parsed_values)}. Message: {parsed_values}")
+            print(f"Invalid message format received. Expected 12 values, got {len(parsed_values)}. Message: {parsed_values}")
 
 
     def parse_message(self, message):
