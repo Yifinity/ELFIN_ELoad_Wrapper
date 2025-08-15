@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from frontend.widgets.serial_connection_widget import SerialConnectionWidget
+from frontend.widgets.connection_widget import SerialConnectionWidget
 from frontend.widgets.data_table_widget import DataTableWidget
 from frontend.widgets.test_manager_widget import TestManagerWidget
 

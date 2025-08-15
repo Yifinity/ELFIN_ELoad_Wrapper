@@ -1,6 +1,9 @@
 import serial
 import serial.tools.list_ports 
+from frontend.widgets.connection_widget import ConnectionWidget
+from csv_manager import CSVManager
 from publisher import Publisher
+# from serial_connection_widget import SerialConnectionWidget
 
 class SerialManager:
     def __init__(self, write_lock):
@@ -10,8 +13,14 @@ class SerialManager:
         self.port_name = None
 
         self.connection_publisher = Publisher() # used to manage connection events
+        self.connection_widget = ConnectionWidget()
+        self.connection_publisher.subscribe(self.connection_widget)
+
         self.data_publisher = Publisher() # used to manage data events
-    
+        self.csv_manager = CSVManager()
+        self.data_publisher.subscribe(self.csv_manager)    
+        
+
     def is_connected(self):
         return self.arduino and self.arduino.is_open
     
@@ -69,8 +78,7 @@ class SerialManager:
                 self.parsed_values = self.parse_message(self.latest_message)
                 if self.parsed_values is None:
                     return -2
-                self.data_publisher.publish(self.parsed_values) # 
-                # -- Add publish event here (CSV, plot):
+                self.data_publisher.publish(self.parsed_values) 
                 
             else:
                 self.consecutive_failed_instances += 1

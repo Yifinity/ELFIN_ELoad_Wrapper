@@ -11,7 +11,6 @@ class BackendManager:
         print("Backend Initialized")        
         self.thread_running = False
         self.write_lock = threading.Lock() # Required for concurrent writes
-        self.history_file_path = "app_history.json" # Define a file path for history    
         
         self.serial_manager = SerialManager(self.write_lock)
         self.csv_manager = CSVManager()

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 
-class SerialConnectionWidget(ctk.CTkFrame):
+class ConnectionWidget(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.connected_label = ctk.CTkLabel(self, text="Disconnected", 
@@ -9,7 +9,8 @@ class SerialConnectionWidget(ctk.CTkFrame):
         self.connected_label.grid(row = 0, column = 0, padx = 20, pady = 20)
         print("Serial Connection Widget Initialized")
 
-    def update_connection(self, status):
+    
+    def receive(self, status): # Receive from 
         if status:
             self.connected_label.configure(text="Connected", 
                                            fg_color="#008e2a")

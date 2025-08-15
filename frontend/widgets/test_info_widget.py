@@ -113,33 +113,33 @@ class TestInfoWidget(ctk.CTkFrame):
             # --- CSV Logging: Stop ---
             self.stop_csv_logging()
 
-    def start_csv_logging(self, load_idx):
-        import datetime
-        self.current_test_load = load_idx
-        filename = f"test_load{load_idx}_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
-        self.csv_file = open(filename, "w", newline="")
-        self.csv_writer = self.csv_file
-        import csv
-        self.csv_writer = csv.writer(self.csv_file)
-        # Write header
-        self.csv_writer.writerow(["timestamp", "L1_temperature", "L2_temperature", "L3_temperature", "L1_current", "L2_current", "L3_current", "L1_voltage", "L2_voltage","L3_voltage", "L1_thermistor", "L2_thermistor", "L3_thermistor"])
-        self.logging_active = True
-        # Register callback to backend
-        self.backend.add_data_callback(self.csv_data_callback)
+    # def start_csv_logging(self, load_idx):
+    #     import datetime
+    #     self.current_test_load = load_idx
+    #     filename = f"test_load{load_idx}_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
+    #     self.csv_file = open(filename, "w", newline="")
+    #     self.csv_writer = self.csv_file
+    #     import csv
+    #     self.csv_writer = csv.writer(self.csv_file)
+    #     # Write header
+    #     self.csv_writer.writerow(["timestamp", "L1_temperature", "L2_temperature", "L3_temperature", "L1_current", "L2_current", "L3_current", "L1_voltage", "L2_voltage","L3_voltage", "L1_thermistor", "L2_thermistor", "L3_thermistor"])
+    #     self.logging_active = True
+    #     # Register callback to backend
+    #     self.backend.add_data_callback(self.csv_data_callback)
 
-    def stop_csv_logging(self):
-        self.logging_active = False
-        if self.csv_file:
-            self.csv_file.close()
-            self.csv_file = None
-        # Remove callback from backend (optional, not implemented here)
-        # You may want to implement a remove_data_callback in backend if needed
+    # def stop_csv_logging(self):
+    #     self.logging_active = False
+    #     if self.csv_file:
+    #         self.csv_file.close()
+    #         self.csv_file = None
+    #     # Remove callback from backend (optional, not implemented here)
+    #     # You may want to implement a remove_data_callback in backend if needed
 
-    def csv_data_callback(self, parsed_values):
-        import datetime
-        if self.logging_active and len(parsed_values) == 12:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-            self.csv_writer.writerow([timestamp] + parsed_values)
+    # def csv_data_callback(self, parsed_values):
+    #     import datetime
+    #     if self.logging_active and len(parsed_values) == 12:
+    #         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    #         self.csv_writer.writerow([timestamp] + parsed_values)
  
 
     def check_valid_test(self, inputs):
