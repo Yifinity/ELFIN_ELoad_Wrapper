@@ -47,16 +47,16 @@ class FrontendManager(ctk.CTkFrame):
                                                      self.update_selected_load)
         self.control_panel_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
         
-        self.plot_panel_frame = PlotDisplayFrame(self, 
-                                                 selected_load=self.selected_load)
-        self.plot_panel_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+        # self.plot_panel_frame = PlotDisplayFrame(self, 
+        #                                          selected_load=self.selected_load)
+        # self.plot_panel_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
-        self.backend.add_data_callback(self.control_panel_frame.update_data_table)
-        self.backend.set_plot_callback(self.plot_panel_frame.update_plot_values)
+        # self.backend.add_data_callback(self.control_panel_frame.update_data_table)
+        # self.backend.set_plot_callback(self.plot_panel_frame.update_plot_values)
             
-    def update_message(self, message):
-        pass # Placeholder or remove if not used
+    # def update_message(self, message):
+    #     pass # Placeholder or remove if not used
 
-    def update_selected_load(self, target_load):
-        self.selected_load = target_load
+    # def update_selected_load(self, target_load):
+    #     self.selected_load = target_load
 
