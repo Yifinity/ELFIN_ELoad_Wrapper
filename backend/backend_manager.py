@@ -4,7 +4,7 @@ import customtkinter as ctk
 # import serial.tools.list_ports # Import to list available serial ports
 # import json # Import for JSON operations
 # import os   # Import for path operations
-from backend.serial_manager import SerialManager
+from backend.serial_backend import SerialManager
 from backend.csv_manager import CSVManager
 
 class BackendManager:

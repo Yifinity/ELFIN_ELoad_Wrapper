@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from frontend.controls_frame import ControlPanelFrame
 from frontend.plot_frame import PlotDisplayFrame
-from frontend.widgets.port_select_widget import PortSelectorWidget # Import your new widget
+from frontend.port_select_widget import PortSelectorWidget # Import your new widget
 
 class FrontendManager(ctk.CTkFrame):
     def __init__(self, master, backend_manager):

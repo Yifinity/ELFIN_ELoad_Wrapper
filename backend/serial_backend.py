@@ -3,11 +3,10 @@ import threading
 import serial.tools.list_ports # Import to list available serial ports
 from publisher import Publisher
 
-class SerialManager:
+class SerialBackend:
     def __init__(self, ):
         # Connection variables
         self.arduino = None  
-        self.connected = False
         self.consecutive_failed_instances = 0
         self.port_name = None 
         self.baudrate = 115200
@@ -21,6 +20,9 @@ class SerialManager:
         # Publisher for connection events
         self.publisher = Publisher()
 
+    def connected(self):
+        return self.arduino and self.arduino.is_open
+
     def subscribe(self, subscriber):
         self.publisher.subscribe(subscriber)
 
@@ -32,7 +34,7 @@ class SerialManager:
 
     def connect_to_port(self, port_name):
         # Close existing connection if any
-        if self.arduino and self.arduino.is_open:
+        if self.connected():
             self.arduino.close() 
             self.connected = False
 
@@ -60,7 +62,7 @@ class SerialManager:
             return False
 
     def begin_reading_thread(self):
-        if self.arduino and self.arduino.is_open:
+        if self.connected():
             if not self.thread_running: 
                 self.thread_running = True
                 self.reading_thread = threading.Thread(target=self.run, daemon=True)
@@ -79,7 +81,7 @@ class SerialManager:
                 print("Warning: Reading thread did not terminate gracefully.")
 
         # Now close the arduino
-        if self.arduino and self.arduino.is_open:
+        if self.connected():
             self.send_command("-1") # Disconnect char
             self.arduino.close()
 
@@ -103,14 +105,13 @@ class SerialManager:
     # Run function that runs simultaneously with GUI main thread
     def run(self):
         while self.thread_running:
-            if not self.arduino or not self.arduino.is_open:
-                print("Failure to run: No active serial connection.")
-
+            if not self.connected():
                 # Send disconnect event
                 self.publisher.publish("CONNECTION", [False])
                 # if self.connection_callback:
                 #     self.main.after(0, lambda: self.connection_callback(False))
                 self.main.after(100, lambda: None) # Small delay to prevent busy-waiting
+                print("Failure to run: No active serial connection.")
                 continue
 
             try:
@@ -152,7 +153,7 @@ class SerialManager:
                 self.stop_reading_thread() # Stop the thread on critical error
 
     def send_command(self, command):
-        if self.arduino and self.arduino.is_open:
+        if self.connected():
             with self.write_lock:
                 try:
                     self.arduino.write(command.encode('utf-8'))

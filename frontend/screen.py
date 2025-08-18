@@ -1,4 +1,4 @@
-from backend.serial_manager import SerialManager
+from backend.serial_backend import SerialManager
 from backend.csv_manager import CSVManager
 
 
