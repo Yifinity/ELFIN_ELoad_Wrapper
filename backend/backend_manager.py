@@ -9,19 +9,23 @@ class BackendManager:
     def __init__(self, main_root):
         print("Backend Initialized")
         self.main = main_root
+
+        # Connection and threading variables
         self.thread_running = False
         self.arduino = None  # Initialize to None, will be set when a port is selected
         self.connected = False
         self.reading_thread = None
         self.latest_message = None
         self.port_name = None # To store the currently selected port name
+        self.consecutive_failed_instances = 0 # Num of consecutive failed reads
+        self.write_lock = threading.Lock() # Required for concurrent writes
 
+
+        # Prob not needed
         self.connection_callback = None
         self.plot_callback = None 
-
-        # Array to hold various callbacks required for data processing
         self.data_callbacks = []
-        self.consecutive_failed_instances = 0 # Num of consecutive failed reads
+        self.history_file_path = "app_history.json" # Define a file path for history
         
         # Initialize historical_values as empty lists for a fresh start every run
         self.historical_values = {
@@ -41,22 +45,6 @@ class BackendManager:
             "L3_temperature": [],
             "L3_thermistor": [],
         }
-
-        self.write_lock = threading.Lock() # Required for concurrent writes
-        self.history_file_path = "app_history.json" # Define a file path for history
-
-
-    def save_history_to_file(self):
-        if not self.historical_values or not self.historical_values.get("time"):
-            print("No data to save to history file.")
-            return
-
-        try:
-            with open(self.history_file_path, 'w') as f: # 'w' mode correctly overwrites
-                json.dump(self.historical_values, f, indent=4)
-            print(f"Historical data saved to {self.history_file_path}")
-        except Exception as e:
-            print(f"Error saving history to file: {e}")
 
 
     def set_connection_callback(self, callback):
@@ -84,6 +72,8 @@ class BackendManager:
             self.port_name = port_name
             self.connected = True
             print(f"Successfully connected to {port_name}")
+
+            # Publish connected event to CSV, Table, and Plot
             if self.connection_callback:
                 self.main.after(0, lambda: self.connection_callback(True))
             return True
@@ -92,6 +82,8 @@ class BackendManager:
             self.port_name = None
             self.arduino = None
             print(f"Failed to connect to {port_name}: {e}")
+
+            # Publish disconnected event to CSV, Table, and Plot
             if self.connection_callback:
                 self.main.after(0, lambda: self.connection_callback(False))
             return False

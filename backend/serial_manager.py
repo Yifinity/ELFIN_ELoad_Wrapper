@@ -4,31 +4,34 @@ import serial.tools.list_ports # Import to list available serial ports
 
 class SerialManager:
     def __init__(self, ):
-        self.thread_running = False
-        self.arduino = None  # Initialize to None, will be set when a port is selected
+        # Connection variables
+        self.arduino = None  
         self.connected = False
+        self.consecutive_failed_instances = 0
+        self.port_name = None 
+        self.baudrate = 115200
+        self.write_lock = threading.Lock() # Required for concurrent writes
+
+        # Reading thread variables
         self.reading_thread = None
+        self.thread_running = False
         self.latest_message = None
-        self.port_name = None # To store the currently selected port name
-        self.connection_callback = None
-        self.plot_callback = None 
 
-        # Array to hold various callbacks required for data processing
-        self.data_callbacks = []
-        self.consecutive_failed_instances = 0 # Num of consecutive failed reads
-
+    # Display available ports 
     def list_available_ports(self):
         ports = serial.tools.list_ports.comports()
         available_ports = [port.device for port in ports]
-        print(f"Available ports: {available_ports}")
+        # print(f"Available ports: {available_ports}")
         return available_ports
 
     def connect_to_port(self, port_name):
+        # Close existing connection if any
         if self.arduino and self.arduino.is_open:
-            self.arduino.close() # Close existing connection if any
+            self.arduino.close() 
             self.connected = False
+
         try:
-            self.arduino = serial.Serial(port=port_name, baudrate=115200, timeout=0.1)
+            self.arduino = serial.Serial(port=port_name, baudrate=self.baudrate, timeout=0.1)
             self.port_name = port_name
             self.connected = True
             print(f"Successfully connected to {port_name}")
