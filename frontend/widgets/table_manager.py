@@ -1,6 +1,6 @@
 import customtkinter as ctk
 
-class DataTableWidget(ctk.CTkFrame):
+class TableManager(ctk.CTkFrame):
     # class handling the current display of the three programmable loads
     def __init__(self, master):
         super().__init__(master) 
@@ -60,6 +60,27 @@ class DataTableWidget(ctk.CTkFrame):
         self.load3_thermistor = ctk.CTkLabel(self, text="0", text_color="white")
         self.load3_thermistor.grid(row=4, column=3, padx=10, pady=5, sticky="nsew")
         print("Data Table Widget Initialized")
+
+    def recieve(self, message, data):
+        if message == "DATA":
+            self.update_table(data)
+        elif message == "CONNECTION":
+            if not data[0]:
+                # Reset all values if disconnected
+                self.load1_voltage.configure(text="0V")
+                self.load1_current.configure(text="0A")
+                self.load1_temperature.configure(text="0°C")
+                self.load1_thermistor.configure(text="0°C")
+                
+                self.load2_voltage.configure(text="0V")
+                self.load2_current.configure(text="0A")
+                self.load2_temperature.configure(text="0°C")
+                self.load2_thermistor.configure(text="0°C")
+
+                self.load3_voltage.configure(text="0V")
+                self.load3_current.configure(text="0A")
+                self.load3_temperature.configure(text="0°C")
+                self.load3_thermistor.configure(text="0°C")
 
     def update_table(self, values):
         if len(values) == 12:

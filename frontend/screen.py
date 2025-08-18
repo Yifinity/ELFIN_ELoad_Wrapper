@@ -1,7 +1,6 @@
 from backend.serial_backend import SerialManager
 from backend.csv_manager import CSVManager
-
-
+from frontend.widgets.table_manager import TableManager
 class Screen:
     def __init__(self):
         # Publishers

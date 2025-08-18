@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from frontend.serial_manager import SerialConnectionWidget
-from frontend.widgets.data_table_widget import DataTableWidget
+from frontend.widgets.table_manager import DataTableWidget
 from frontend.widgets.test_manager_widget import TestManagerWidget
 
 class ControlPanelFrame(ctk.CTkFrame):

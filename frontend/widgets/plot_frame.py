@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class PlotDisplayFrame(ctk.CTkFrame):
-    def __init__(self, master, selected_load):
+    def __init__(self, master):
         super().__init__(master)       
-                # Configure grid rows for proper layout
-        self.selected_load = selected_load
+        # Configure grid rows for proper layout
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure((1,2,3), weight=3)
         self.grid_columnconfigure((0,1,2), weight=1)
@@ -114,6 +113,33 @@ class PlotDisplayFrame(ctk.CTkFrame):
         ]
         self.toggle_plot(0) # enable the first graph on startup.
 
+        self.historical_values = {
+            "time": [],
+            "L1_voltage": [],
+            "L1_current": [],
+            "L1_temperature": [],
+            "L1_thermistor": [],
+
+            "L2_voltage": [],
+            "L2_current": [],
+            "L2_temperature": [],
+            "L2_thermistor": [],
+
+            "L3_voltage": [],
+            "L3_current": [],
+            "L3_temperature": [],
+            "L3_thermistor": [],
+        }
+
+    def recieve(self, message, data):
+        if message == "DATA":
+            self.update_plot_values(data)
+        elif message == "CONNECTION":
+            if not data[0]:
+                # Reset all values if disconnected
+                for key in self.historical_values:
+                    self.historical_values[key] = []
+                print("Disconnected, resetting historical values.")
 
     def toggle_plot(self, target):
         # Clear the data would go to each of the lines
@@ -129,28 +155,45 @@ class PlotDisplayFrame(ctk.CTkFrame):
             self.button_load3.configure(fg_color="#0ee69e") if self.plots_toggled[target] else self.button_load3.configure(fg_color="gray")
 
     # Update the plot values based on load selections
-    def update_plot_values(self, historical_values):
+    def update_plot_values(self, new_values):
+        # Append new values to historical values
+        self.historical_values['time'].append(new_values['time'])
+        self.historical_values['L1_voltage'].append(new_values['L1_voltage'])   
+        self.historical_values['L1_current'].append(new_values['L1_current'])
+        self.historical_values['L1_temperature'].append(new_values['L1_temperature'])   
+        self.historical_values['L1_thermistor'].append(new_values['L1_thermistor'])
+        
+        self.historical_values['L2_voltage'].append(new_values['L2_voltage'])
+        self.historical_values['L2_current'].append(new_values['L2_current'])
+        self.historical_values['L2_temperature'].append(new_values['L2_temperature'])
+        self.historical_values['L2_thermistor'].append(new_values['L2_thermistor'])
+        
+        self.historical_values['L3_voltage'].append(new_values['L3_voltage'])
+        self.historical_values['L3_current'].append(new_values['L3_current'])
+        self.historical_values['L3_temperature'].append(new_values['L3_temperature'])
+        self.historical_values['L3_thermistor'].append(new_values['L3_thermistor'])
+
         if(self.plots_toggled[0]):
             try:
-                self.line_L1_voltage[0].set_data(historical_values['time'], historical_values['L1_voltage'])
-                self.line_L1_current[0].set_data(historical_values['time'], historical_values['L1_current'])
-                self.line_L1_temperature[0].set_data(historical_values['time'], historical_values['L1_temperature']) 
+                self.line_L1_voltage[0].set_data(self.historical_values['time'], self.historical_values['L1_voltage'])
+                self.line_L1_current[0].set_data(self.historical_values['time'], self.historical_values['L1_current'])
+                self.line_L1_temperature[0].set_data(self.historical_values['time'], self.historical_values['L1_temperature']) 
             except:
                 print("Error while getting voltage")
 
         if(self.plots_toggled[1]):
             try:
-                self.line_L2_voltage[0].set_data(historical_values['time'], historical_values['L2_voltage'])
-                self.line_L2_current[0].set_data(historical_values['time'], historical_values['L2_current'])
-                self.line_L2_temperature[0].set_data(historical_values['time'], historical_values['L2_temperature']) 
+                self.line_L2_voltage[0].set_data(self.historical_values['time'], self.historical_values['L2_voltage'])
+                self.line_L2_current[0].set_data(self.historical_values['time'], self.historical_values['L2_current'])
+                self.line_L2_temperature[0].set_data(self.historical_values['time'], self.historical_values['L2_temperature']) 
             except:
                 print("Error while getting current")
 
         if(self.plots_toggled[2]):
             try:
-                self.line_L3_voltage[0].set_data(historical_values['time'], historical_values['L3_voltage'])
-                self.line_L3_current[0].set_data(historical_values['time'], historical_values['L3_current'])
-                self.line_L3_temperature[0].set_data(historical_values['time'], historical_values['L3_temperature']) 
+                self.line_L3_voltage[0].set_data(self.historical_values['time'], self.historical_values['L3_voltage'])
+                self.line_L3_current[0].set_data(self.historical_values['time'], self.historical_values['L3_current'])
+                self.line_L3_temperature[0].set_data(self.historical_values['time'], self.historical_values['L3_temperature']) 
             except:
                 print("Error while getting temperature")
 
