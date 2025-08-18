@@ -20,33 +20,6 @@ class BackendManager:
         self.consecutive_failed_instances = 0 # Num of consecutive failed reads
         self.write_lock = threading.Lock() # Required for concurrent writes
 
-
-        # Prob not needed
-        self.connection_callback = None
-        self.plot_callback = None 
-        self.data_callbacks = []
-        self.history_file_path = "app_history.json" # Define a file path for history
-        
-        # Initialize historical_values as empty lists for a fresh start every run
-        self.historical_values = {
-            "time": [],
-            "L1_voltage": [],
-            "L1_current": [],
-            "L1_temperature": [],
-            "L1_thermistor": [],
-
-            "L2_voltage": [],
-            "L2_current": [],
-            "L2_temperature": [],
-            "L2_thermistor": [],
-
-            "L3_voltage": [],
-            "L3_current": [],
-            "L3_temperature": [],
-            "L3_thermistor": [],
-        }
-
-
     def set_connection_callback(self, callback):
         self.connection_callback = callback
 
@@ -73,7 +46,7 @@ class BackendManager:
             self.connected = True
             print(f"Successfully connected to {port_name}")
 
-            # Publish connected event to CSV, Table, and Plot
+            # Publish connected event to Table and Plot
             if self.connection_callback:
                 self.main.after(0, lambda: self.connection_callback(True))
             return True
