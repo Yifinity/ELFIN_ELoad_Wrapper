@@ -1,7 +1,6 @@
 import datetime
 import csv
 
-
 class CSVManager:
     def __init__(self):
         self.is_saving = False
@@ -46,7 +45,7 @@ class CSVManager:
         if(len(input) == 1):
             self.stop_csv_logging() # length = 1 --> end logging. 
 
-        if(len(input) == 2): 
+        if(len(input) == 2): # start logging and take second param as the selected load
             self.start_csv_logging    
 
 
