@@ -73,7 +73,6 @@ class SerialManager:
         if self.arduino and self.arduino.is_open:
             self.send_command("-1") # Disconnect char
             self.arduino.close()
-            self.connected = False
 
             # Send disconnect event
             if self.connection_callback:
@@ -94,8 +93,10 @@ class SerialManager:
     # Run function that runs simultaneously with GUI main thread
     def run(self):
         while self.thread_running:
-            if not self.connected or not self.arduino or not self.arduino.is_open:
-                # If not connected or arduino object is not ready, wait a bit and continue
+            if not self.arduino or not self.arduino.is_open:
+                print("Failure to run: No active serial connection.")
+
+                # Send disconnect event
                 if self.connection_callback:
                     self.main.after(0, lambda: self.connection_callback(False))
                 self.main.after(100, lambda: None) # Small delay to prevent busy-waiting
@@ -103,44 +104,37 @@ class SerialManager:
 
             try:
                 self.input_msg = self.arduino.readline() 
-                
                 if self.input_msg:
-                    self.connected = True
                     self.consecutive_failed_instances = 0 # Reset the failed instances
-                    self.latest_message = self.input_msg.decode('utf-8', errors='replace').strip()
-                    
+                    self.latest_message = self.input_msg.decode('utf-8', errors='replace').strip()                  
                     self.parsed_values = self.parse_message(self.latest_message)
                     if self.parsed_values is None:
+                        print("Failure: prase values is None")
                         continue
 
-                    self.update_history(self.parsed_values)
+                    # Call data-in event for CSV, Table, Plot
                     if self.plot_callback:
                         self.main.after(0, lambda: self.plot_callback(self.historical_values))
-
                     for data_callback in self.data_callbacks:
                         self.main.after(0, lambda: data_callback(self.parsed_values))
                     
                 else:
                     self.consecutive_failed_instances += 1
-                    # Increased threshold for consecutive failed instances for robustness
-                    if self.consecutive_failed_instances >= 5000: # Approx 500 seconds at 100ms delay
+                    if self.consecutive_failed_instances >= 5000: # Approx 500 seconds
                         print("Failed to read data for 5000 consecutive times. Disconnecting.")
                         self.connected = False
+
+                        # call disconnect event
                         if self.connection_callback:
                             self.main.after(0, lambda: self.connection_callback(False))
                         self.stop_reading_thread() # Stop the thread entirely on prolonged failure
-            except serial.SerialException as e:
-                print(f"Serial communication error: {e}")
+            except (serial.SerialException, Exception) as e:
+                print(f"Unexpected Error: {e}")
                 self.connected = False
+                # call disconnect event
                 if self.connection_callback:
                     self.main.after(0, lambda: self.connection_callback(False))
                 self.stop_reading_thread() # Stop the thread on critical error
-            except Exception as e:
-                print(f"An unexpected error occurred in run loop: {e}")
-                self.connected = False
-                if self.connection_callback:
-                    self.main.after(0, lambda: self.connection_callback(False))
-                self.stop_reading_thread()
 
     def send_command(self, command):
         if self.arduino and self.arduino.is_open:
