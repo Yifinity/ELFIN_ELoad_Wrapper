@@ -118,16 +118,18 @@ class SerialManager:
                 if self.input_msg:
                     self.consecutive_failed_instances = 0 # Reset the failed instances
                     self.latest_message = self.input_msg.decode('utf-8', errors='replace').strip()                  
-                    self.parsed_values = self.parse_message(self.latest_message)
-                    if self.parsed_values is None:
-                        print("Failure: prase values is None")
+                    parsed_values = self.parse_message(self.latest_message)
+                    if parsed_values is None:
+                        print("Failure: parsed values is None")
                         continue
 
                     # Call data-in event for CSV, Table, Plot
-                    if self.plot_callback:
-                        self.main.after(0, lambda: self.plot_callback(self.historical_values))
-                    for data_callback in self.data_callbacks:
-                        self.main.after(0, lambda: data_callback(self.parsed_values))
+                    self.publisher.publish("DATA", [parsed_values])
+
+                    # if self.plot_callback:
+                    #     self.main.after(0, lambda: self.plot_callback(self.historical_values))
+                    # for data_callback in self.data_callbacks:
+                    #     self.main.after(0, lambda: data_callback(self.parsed_values))
                     
                 else:
                     self.consecutive_failed_instances += 1

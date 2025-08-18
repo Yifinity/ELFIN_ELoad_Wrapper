@@ -14,7 +14,11 @@ class BackendManager:
         self.serial_manager = SerialManager()
         self.csv_manager = CSVManager()
 
-        self.serial_manager.subscribe(self.csv_manager)
+        # Subscribe CSV manager to connection events
+        self.subscribe_connection(self.csv_manager)
+
+    def subscribe_connection(self, subscriber):
+        self.serial_manager.subscribe(subscriber)
 
 
 

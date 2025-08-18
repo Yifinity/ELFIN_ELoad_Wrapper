@@ -5,9 +5,6 @@ class PortSelectorWidget(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self.backend = backend_manager
         
-        # Ensure the backend's connection callback points to this widget's update method
-        self.backend.set_connection_callback(self._update_connection_status_ui)
-
         self.grid_columnconfigure(0, weight=1) # Allow column to expand
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
@@ -46,9 +43,6 @@ class PortSelectorWidget(ctk.CTkFrame):
         self.status_label.grid(row=1, column=0, columnspan=4, padx=5, pady=5, sticky="w")
 
     def _populate_ports(self):
-        """
-        Fetches available serial ports from the backend and updates the dropdown menu.
-        """
         available_ports = self.backend.list_available_ports()
         if not available_ports:
             available_ports = ["No Ports Found"]
