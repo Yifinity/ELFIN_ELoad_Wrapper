@@ -17,7 +17,6 @@ class SerialManager:
         self.thread_running = False
         self.latest_message = None
 
-    # Display available ports 
     def list_available_ports(self):
         ports = serial.tools.list_ports.comports()
         available_ports = [port.device for port in ports]
@@ -34,22 +33,26 @@ class SerialManager:
             self.arduino = serial.Serial(port=port_name, baudrate=self.baudrate, timeout=0.1)
             self.port_name = port_name
             self.connected = True
-            print(f"Successfully connected to {port_name}")
+
+            # Publish connected event to Table and Plot
             if self.connection_callback:
                 self.main.after(0, lambda: self.connection_callback(True))
+#            print(f"Successfully connected to {port_name}")
             return True
         except serial.SerialException as e:
             self.connected = False
             self.port_name = None
             self.arduino = None
-            print(f"Failed to connect to {port_name}: {e}")
+
+            # Publish disconnected event to CSV, Table, and Plot
             if self.connection_callback:
                 self.main.after(0, lambda: self.connection_callback(False))
+            # print(f"Failed to connect to {port_name}: {e}")
             return False
 
     def begin_reading_thread(self):
         if self.arduino and self.arduino.is_open:
-            if not self.thread_running: # Only start if not already running
+            if not self.thread_running: 
                 self.thread_running = True
                 self.reading_thread = threading.Thread(target=self.run, daemon=True)
                 self.reading_thread.start()
@@ -58,8 +61,6 @@ class SerialManager:
                 print("Reading thread is already running.")
         else:
             print("Cannot start reading thread: No active serial connection.")
-            if self.connection_callback:
-                self.main.after(0, lambda: self.connection_callback(False))
 
     def stop_reading_thread(self):
         self.thread_running = False
@@ -72,10 +73,12 @@ class SerialManager:
         if self.arduino and self.arduino.is_open:
             self.send_command("-1") # Disconnect char
             self.arduino.close()
-            print("Serial Connection Closed")
             self.connected = False
+
+            # Send disconnect event
             if self.connection_callback:
                 self.main.after(0, lambda: self.connection_callback(False))
+            print("Serial Connection Closed")
         else:
             print("No active serial connection to close.")
         print("Serial Reading Thread Stopped") 
@@ -88,6 +91,7 @@ class SerialManager:
             print(f"Error parsing message '{message}': {e}")
             return None
 
+    # Run function that runs simultaneously with GUI main thread
     def run(self):
         while self.thread_running:
             if not self.connected or not self.arduino or not self.arduino.is_open:
