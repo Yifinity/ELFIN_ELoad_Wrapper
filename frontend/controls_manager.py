@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from publisher import Publisher
 
 class TestInfoWidget(ctk.CTkFrame):
     import csv
@@ -58,8 +59,20 @@ class TestInfoWidget(ctk.CTkFrame):
         # self.textbox_secs_per_step.grid_forget()
         self.toggle_switch_state(False) # No Test Running
 
+        # Subscription logic
+        self.publisher = Publisher()
+
         print("Test Info Widget Initialized")
 
+
+    def receive(self, message, data):
+        if message == "CONNECTION":
+            if data[0] == False and self.logging_active:
+                # To-do --> have stopping or starting the test a param. 
+                self.start_stop_test()
+
+    def subscribe(self, subscriber):
+        self.publisher.subscribe(subscriber)
 
     def toggle_switch_state(self, running):
         if running:
@@ -92,7 +105,17 @@ class TestInfoWidget(ctk.CTkFrame):
                 output_command += f'{self.textbox_target.get()},{self.textbox_startpoint.get()},{self.textbox_current_increment.get()},'
                 output_command += f'{self.textbox_secs_per_step.get()}'
                 output_command += '>' # End signal
-                self.backend.send_command(output_command)
+
+                #Send out published test start message to CSV, Table, Plot, and Serial backend object. 
+                self.publisher.publish("TEST", [
+                    True, # test started
+                    self.master.selected_load, 
+                    self.load_tests[self.master.selected_load]["test_type"],
+                    self.load_tests[self.master.selected_load]["target"],
+                    self.load_tests[self.master.selected_load]["extra_params"], 
+                    output_command
+                ])
+
                 self.update_test_info(self.master.selected_load)
                 self.clear_textboxes()
 
@@ -113,35 +136,7 @@ class TestInfoWidget(ctk.CTkFrame):
             # --- CSV Logging: Stop ---
             self.stop_csv_logging()
 
-    def start_csv_logging(self, load_idx):
-        import datetime
-        self.current_test_load = load_idx
-        filename = f"test_load{load_idx}_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
-        self.csv_file = open(filename, "w", newline="")
-        self.csv_writer = self.csv_file
-        import csv
-        self.csv_writer = csv.writer(self.csv_file)
-        # Write header
-        self.csv_writer.writerow(["timestamp", "L1_temperature", "L2_temperature", "L3_temperature", "L1_current", "L2_current", "L3_current", "L1_voltage", "L2_voltage","L3_voltage", "L1_thermistor", "L2_thermistor", "L3_thermistor"])
-        self.logging_active = True
-        # Register callback to backend
-        self.backend.add_data_callback(self.csv_data_callback)
-
-    def stop_csv_logging(self):
-        self.logging_active = False
-        if self.csv_file:
-            self.csv_file.close()
-            self.csv_file = None
-        # Remove callback from backend (optional, not implemented here)
-        # You may want to implement a remove_data_callback in backend if needed
-
-    def csv_data_callback(self, parsed_values):
-        import datetime
-        if self.logging_active and len(parsed_values) == 12:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-            self.csv_writer.writerow([timestamp] + parsed_values)
  
-
     def check_valid_test(self, inputs):
         if(inputs[0] == ''): # Empty test
             return False        

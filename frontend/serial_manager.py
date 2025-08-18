@@ -44,6 +44,9 @@ class SerialManager(ctk.CTkFrame):
     def subscribe(self, subscriber):
         self.serial_backend.subscribe(subscriber)
 
+    # To-do: Add write to arduino functionality. 
+    # def receive(self, message, data):
+
     def populate_ports(self):
         available_ports = self.serial_backend.list_available_ports()
         if not available_ports:
