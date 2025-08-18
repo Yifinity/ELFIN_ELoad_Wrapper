@@ -1,6 +1,7 @@
 import serial
 import threading
 import serial.tools.list_ports # Import to list available serial ports
+from publisher import Publisher
 
 class SerialManager:
     def __init__(self, ):
@@ -16,6 +17,12 @@ class SerialManager:
         self.reading_thread = None
         self.thread_running = False
         self.latest_message = None
+
+        # Publisher for connection events
+        self.publisher = Publisher()
+
+    def subscribe(self, subscriber):
+        self.publisher.subscribe(subscriber)
 
     def list_available_ports(self):
         ports = serial.tools.list_ports.comports()
@@ -35,9 +42,10 @@ class SerialManager:
             self.connected = True
 
             # Publish connected event to Table and Plot
-            if self.connection_callback:
-                self.main.after(0, lambda: self.connection_callback(True))
-#            print(f"Successfully connected to {port_name}")
+            self.publisher.publish("CONNECTION", [True])
+            # if self.connection_callback:
+            #     self.main.after(0, lambda: self.connection_callback(True))
+            # print(f"Successfully connected to {port_name}")
             return True
         except serial.SerialException as e:
             self.connected = False
@@ -45,8 +53,9 @@ class SerialManager:
             self.arduino = None
 
             # Publish disconnected event to CSV, Table, and Plot
-            if self.connection_callback:
-                self.main.after(0, lambda: self.connection_callback(False))
+            self.publisher.publish("CONNECTION", [False])
+            # if self.connection_callback:
+            #     self.main.after(0, lambda: self.connection_callback(False))
             # print(f"Failed to connect to {port_name}: {e}")
             return False
 
@@ -75,8 +84,9 @@ class SerialManager:
             self.arduino.close()
 
             # Send disconnect event
-            if self.connection_callback:
-                self.main.after(0, lambda: self.connection_callback(False))
+            self.publisher.publish("CONNECTION", [False])
+            # if self.connection_callback:
+            #     self.main.after(0, lambda: self.connection_callback(False))
             print("Serial Connection Closed")
         else:
             print("No active serial connection to close.")
@@ -97,8 +107,9 @@ class SerialManager:
                 print("Failure to run: No active serial connection.")
 
                 # Send disconnect event
-                if self.connection_callback:
-                    self.main.after(0, lambda: self.connection_callback(False))
+                self.publisher.publish("CONNECTION", [False])
+                # if self.connection_callback:
+                #     self.main.after(0, lambda: self.connection_callback(False))
                 self.main.after(100, lambda: None) # Small delay to prevent busy-waiting
                 continue
 
@@ -125,15 +136,17 @@ class SerialManager:
                         self.connected = False
 
                         # call disconnect event
-                        if self.connection_callback:
-                            self.main.after(0, lambda: self.connection_callback(False))
+                        self.publisher.publish("CONNECTION", [False])
+                        # if self.connection_callback:
+                        #     self.main.after(0, lambda: self.connection_callback(False))
                         self.stop_reading_thread() # Stop the thread entirely on prolonged failure
             except (serial.SerialException, Exception) as e:
                 print(f"Unexpected Error: {e}")
                 self.connected = False
                 # call disconnect event
-                if self.connection_callback:
-                    self.main.after(0, lambda: self.connection_callback(False))
+                self.publisher.publish("CONNECTION", [False])
+                # if self.connection_callback:
+                #     self.main.after(0, lambda: self.connection_callback(False))
                 self.stop_reading_thread() # Stop the thread on critical error
 
     def send_command(self, command):

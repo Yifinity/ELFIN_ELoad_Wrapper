@@ -5,10 +5,9 @@ class Publisher:
     def subscribe(self, subscriber):
         self.subscribers.append(subscriber)
 
-    def publish(self, message):
+    def publish(self, message, data):
         for subscriber in self.subscribers:
-            subscriber.receive(message)
-
+            subscriber.receive(message, data)
 class Subscriber:
     def __init__(self, name):
         self.name = name
