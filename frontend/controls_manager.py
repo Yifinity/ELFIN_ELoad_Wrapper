@@ -96,8 +96,8 @@ class TestInfoWidget(ctk.CTkFrame):
                 self.update_test_info(self.master.selected_load)
                 self.clear_textboxes()
 
-                # --- CSV Logging: Start ---
-                self.start_csv_logging(self.master.selected_load)
+                # Send callback for test start
+                # self.start_csv_logging(self.master.selected_load)
             except Exception as e:
                 print(f"Test Input Error: {e}")
                 return
