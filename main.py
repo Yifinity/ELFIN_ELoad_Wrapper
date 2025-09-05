@@ -16,9 +16,11 @@ app.geometry("1200x800")
 app_backend = app_backend()
 
 # Core components of the app
-app.grid_columnconfigure(0, weight=3)
-app.grid_columnconfigure(1, weight=5)
-app.grid_rowconfigure((0,1,2), weight=1, minsize=100)
+app.grid_columnconfigure(0, weight=1)
+app.grid_columnconfigure(1, weight=2)
+
+app.grid_rowconfigure(0, weight=1, minsize=100)
+app.grid_rowconfigure((1,2), weight=5, minsize=100)
 
 serial_screen = serial_widget(app, app_backend)
 serial_screen.grid(row=0, column=0, padx=10, pady=20, sticky="nsew")
