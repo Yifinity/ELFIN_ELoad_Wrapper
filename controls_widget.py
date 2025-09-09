@@ -2,9 +2,10 @@ import customtkinter as ctk
 
 # Widget with three buttons to select between loads
 class controls_widget(ctk.CTkFrame):
-    def __init__(self, master, backend, *args, **kwargs):
+    def __init__(self, master, app_state, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
-        self.backend = backend
+        self.app_state = app_state
+        # self.backend = backend
         self.grid_rowconfigure((0,1), weight=2)
         self.grid_rowconfigure((2,3,4,5,6), weight=1)
         # self.rowconfigure(1, weight=8)
@@ -89,7 +90,6 @@ class controls_widget(ctk.CTkFrame):
         else:
             self.button_load3.configure(fg_color="#0ee69e")
 
-        self.update_load_callback(self.selected_load)
         print(f"Selected {selected_load}")
     
     def start_stop_test(self):

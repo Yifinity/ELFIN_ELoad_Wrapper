@@ -2,8 +2,9 @@ import customtkinter as ctk
 
 class table_widget(ctk.CTkFrame):
     # class handling the current display of the three programmable loads
-    def __init__(self, master, *args, **kwargs):
+    def __init__(self, master, app_state, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
+        self.app_state = app_state
         self.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)  # Make rows expand equally
         self.grid_columnconfigure((0, 1, 2, 3), weight=1)  # Make all columns expand equally
         

@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from app_state import app_state
 from app_backend import app_backend
 from serial_widget import serial_widget
 from plot_widget import plot_widget
@@ -13,7 +14,8 @@ app = ctk.CTk()
 app.title("ELFIN - Programmable Electronics Load")
 app.geometry("1200x800")
 
-app_backend = app_backend()
+app_state = app_state()
+app_backend = app_backend(app_state)
 
 # Core components of the app
 app.grid_columnconfigure(0, weight=1)
@@ -22,22 +24,30 @@ app.grid_columnconfigure(1, weight=2)
 app.grid_rowconfigure(0, weight=1, minsize=100)
 app.grid_rowconfigure((1,2), weight=5, minsize=100)
 
-serial_screen = serial_widget(app, app_backend)
+serial_screen = serial_widget(app, app_state)
 serial_screen.grid(row=0, column=0, padx=10, pady=20, sticky="nsew")
 
-controls_screen = controls_widget(app, app_backend)
+controls_screen = controls_widget(app, app_state)
 controls_screen.grid(row=1, column=0,  padx=10, pady=20, sticky="nsew")
 
-table_screen = table_widget(app)
+table_screen = table_widget(app, app_state)
 table_screen.grid(row=2, column=0,  padx=10, pady=20, sticky="nsew")
 
-plot_screen = plot_widget(app, app_backend)
+plot_screen = plot_widget(app, app_state)
 plot_screen.grid(row=0, column=1, rowspan=3, padx=10, pady=20, sticky="nsew")
+
+
+def update_widgets():
+    serial_screen.update_status()
+    # plot_screen.update_status()
+    # Update every 100ms
+    app.after(100, update_widgets)  
 
 def on_closing():
     print("Application Stopped")
     # backend.stop_reading_thread() # Close our connection
     app.destroy() 
 
+update_widgets() # Constantly update widgets
 app.protocol("WM_DELETE_WINDOW", on_closing)
 app.mainloop()

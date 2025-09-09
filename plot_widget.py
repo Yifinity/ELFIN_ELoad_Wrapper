@@ -3,17 +3,62 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class plot_widget(ctk.CTkFrame):
-    def __init__(self, master, backend):
-        super().__init__(master)       
+    def __init__(self, master, app_state):
+        super().__init__(master)    
+        self.app_state = app_state   
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure((1,2,3), weight=3)
         self.grid_columnconfigure((0,1,2), weight=1)
+        self.plots_toggled = [True, False, False]
 
         # Initialize the plot
         # Create three independent figures for voltage, current, and temperature
         self.fig_voltage, self.ax_voltage = plt.subplots(figsize=(6, 4))
         self.fig_current, self.ax_current = plt.subplots(figsize=(6, 4))
         self.fig_temperature, self.ax_temperature = plt.subplots(figsize=(6, 4))
+
+
+ # Voltage plot
+        self.line_L1_voltage = self.ax_voltage.plot([], [],
+                                                      label='Load 1 (V)', color='purple')
+        self.line_L2_voltage = self.ax_voltage.plot([], [], 
+                                                    label='Load 2 (V)', color='blue')
+        self.line_L3_voltage = self.ax_voltage.plot([], [], 
+                                                    label='Load 3 (V)', color='green')
+        self.ax_voltage.set_xlabel('Time (s)')
+        self.ax_voltage.set_ylabel('Voltage (V)')
+        # self.ax_voltage.set_title('Voltage vs Time')
+        self.ax_voltage.legend()
+        self.ax_voltage.grid(True)
+
+        # Current plot
+        self.line_L1_current = self.ax_current.plot([], [],
+                                                      label='Load 1 (A)', color='purple')
+        self.line_L2_current = self.ax_current.plot([], [], 
+                                                    label='Load 2 (A)', color='blue')
+        self.line_L3_current = self.ax_current.plot([], [], 
+                                                    label='Load 3 (A)', color='green')
+
+        self.ax_current.set_xlabel('Time (s)')
+        self.ax_current.set_ylabel('Current (A)')
+        # self.ax_current.set_title('Current vs Time')
+        self.ax_current.legend()
+        self.ax_current.grid(True)
+
+        # Temperature plot
+        self.line_L1_temperature = self.ax_temperature.plot([], [],
+                                                      label='Temperature 1 (°C)', color='purple')
+        self.line_L2_temperature = self.ax_temperature.plot([], [], 
+                                                    label='Temperature 2 (°C)', color='blue')
+        self.line_L3_temperature = self.ax_temperature.plot([], [], 
+                                                    label='Temperature 3 (°C)', color='green')
+
+        self.ax_temperature.set_xlabel('Time (s)')
+        self.ax_temperature.set_ylabel('Temperature (°C)')
+        # self.ax_temperature.set_title('Temperature vs Time')
+        self.ax_temperature.legend()
+        self.ax_temperature.grid(True)
+
 
         self.button_load1 = ctk.CTkButton(self, text="Load 1", 
               fg_color="gray",
@@ -52,30 +97,34 @@ class plot_widget(ctk.CTkFrame):
         
 
     # Update the plot values based on load selections
-    def update_plot_values(self, historical_values):
-        if(self.plots_toggled[0]):
-            try:
-                self.line_L1_voltage[0].set_data(historical_values['time'], historical_values['L1_voltage'])
-                self.line_L1_current[0].set_data(historical_values['time'], historical_values['L1_current'])
-                self.line_L1_temperature[0].set_data(historical_values['time'], historical_values['L1_temperature']) 
-            except:
-                print("Error while getting voltage")
+    def update_status(self):
+        # With a new test, have the plots be reset
+        with self.app_state.lock:
+            if(self.app_state.serial_connected):
+                if(self.plots_toggled[0]):
+                    # print(f"Input Values: {self.app_state.latest_data['time']}, {self.app_state.latest_data['L1_voltage']} ")
+                    try:
+                        self.line_L1_voltage[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L1_voltage'])
+                        self.line_L1_current[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L1_current'])
+                        self.line_L1_temperature[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L1_temperature']) 
+                    except Exception as e:
+                        print(f"Error while getting load 1 data: {e}")
 
-        if(self.plots_toggled[1]):
-            try:
-                self.line_L2_voltage[0].set_data(historical_values['time'], historical_values['L2_voltage'])
-                self.line_L2_current[0].set_data(historical_values['time'], historical_values['L2_current'])
-                self.line_L2_temperature[0].set_data(historical_values['time'], historical_values['L2_temperature']) 
-            except:
-                print("Error while getting current")
+                if(self.plots_toggled[1]):
+                    try:
+                        self.line_L2_voltage[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L2_voltage'])
+                        self.line_L2_current[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L2_current'])
+                        self.line_L2_temperature[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L2_temperature']) 
+                    except:
+                        print("Error while getting load 2 data")
 
-        if(self.plots_toggled[2]):
-            try:
-                self.line_L3_voltage[0].set_data(historical_values['time'], historical_values['L3_voltage'])
-                self.line_L3_current[0].set_data(historical_values['time'], historical_values['L3_current'])
-                self.line_L3_temperature[0].set_data(historical_values['time'], historical_values['L3_temperature']) 
-            except:
-                print("Error while getting temperature")
+                if(self.plots_toggled[2]):
+                    try:
+                        self.line_L3_voltage[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L3_voltage'])
+                        self.line_L3_current[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L3_current'])
+                        self.line_L3_temperature[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L3_temperature']) 
+                    except:
+                        print("Error while getting load 3 data")
 
         self.ax_voltage.relim()
         self.ax_voltage.autoscale_view()
