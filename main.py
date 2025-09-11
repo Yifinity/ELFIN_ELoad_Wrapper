@@ -1,10 +1,10 @@
 import customtkinter as ctk
 from app_state import app_state
-from app_backend import app_backend
-from serial_widget import serial_widget
-from plot_widget import plot_widget
-from controls_widget import controls_widget   
-from table_widget import table_widget
+from backend.app_backend import app_backend
+from frontend.widgets.serial_widget import serial_widget
+from frontend.widgets.plot_widget import plot_widget
+from frontend.widgets.controls_widget import controls_widget   
+from frontend.widgets.table_widget import table_widget
 
 # --- main.py --- #
 ctk.set_appearance_mode("System")
@@ -37,17 +37,18 @@ plot_screen = plot_widget(app, app_state)
 plot_screen.grid(row=0, column=1, rowspan=3, padx=10, pady=20, sticky="nsew")
 
 
-def update_widgets():
-    serial_screen.update_status()
+# def update_widgets():
+    # serial_screen.update_status()
     # plot_screen.update_status()
     # Update every 100ms
-    app.after(100, update_widgets)  
+    # app.after(500, update_widgets)  
 
 def on_closing():
     print("Application Stopped")
     # backend.stop_reading_thread() # Close our connection
     app.destroy() 
 
-update_widgets() # Constantly update widgets
+# update_widgets() # Constantly update widgets
 app.protocol("WM_DELETE_WINDOW", on_closing)
 app.mainloop()
+

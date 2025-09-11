@@ -30,6 +30,9 @@ class serial_widget(ctk.CTkFrame):
         self.port_option_menu.configure(values=["No Ports Found"])
         self.port_option_menu.set("Select Serial Port")  # Set initial value to blank
         self.port_option_menu.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+       
+        self.update_period = 100 # Time to refresh state
+        self.update_status()  # Start the periodic status update
 
     def update_status(self):
         if not self.app_state.serial_connected and self.connected:
@@ -46,6 +49,8 @@ class serial_widget(ctk.CTkFrame):
             print("Number of ports changed, updating...")
             self.num_ports = len(self.app_state.available_ports)
             self.repopulate_ports()
+
+        self.after(self.update_period, self.update_status)  # Check every second
 
     def repopulate_ports(self):
         print("0. Time to populate ports...")

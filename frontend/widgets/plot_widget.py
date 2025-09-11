@@ -9,7 +9,7 @@ class plot_widget(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure((1,2,3), weight=3)
         self.grid_columnconfigure((0,1,2), weight=1)
-        self.plots_toggled = [True, False, False]
+        self.plots_toggled = [False, False, False]
 
         # Initialize the plot
         # Create three independent figures for voltage, current, and temperature
@@ -95,36 +95,91 @@ class plot_widget(ctk.CTkFrame):
         self.canvas_temperature_widget.grid(row=3, column=0,columnspan=3,
                                          padx=10, pady=10, sticky="nsew")
         
+        self.toggle_plot(0) # Start with load 1 selected
+        self.update_period = 1000 
+        self.update_status() # Start updating the plots
 
+
+
+    def toggle_plot(self, load_index):
+        self.plots_toggled[load_index] = not self.plots_toggled[load_index]
+        if load_index == 0:
+            self.button_load1.configure(fg_color="#6551D4") if self.plots_toggled[load_index] else self.button_load1.configure(fg_color="gray")
+        elif load_index == 1:
+            self.button_load2.configure(fg_color="#4D80D0") if self.plots_toggled[load_index] else self.button_load2.configure(fg_color="gray")
+        else:
+            self.button_load3.configure(fg_color="#0ee69e") if self.plots_toggled[load_index] else self.button_load3.configure(fg_color="gray")
+        
     # Update the plot values based on load selections
     def update_status(self):
-        # With a new test, have the plots be reset
-        with self.app_state.lock:
-            if(self.app_state.serial_connected):
-                if(self.plots_toggled[0]):
-                    # print(f"Input Values: {self.app_state.latest_data['time']}, {self.app_state.latest_data['L1_voltage']} ")
-                    try:
-                        self.line_L1_voltage[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L1_voltage'])
-                        self.line_L1_current[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L1_current'])
-                        self.line_L1_temperature[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L1_temperature']) 
-                    except Exception as e:
-                        print(f"Error while getting load 1 data: {e}")
+        # Todo: With a new test, have the plots be reset
+        # with self.app_state.lock:
+        if self.app_state.serial_connected:
+            # print("Updating plots...")
+            # Clear axes if any plot is toggled
+            if any(self.plots_toggled):
+                self.ax_voltage.cla()
+                self.ax_current.cla()
+                self.ax_temperature.cla()
 
-                if(self.plots_toggled[1]):
-                    try:
-                        self.line_L2_voltage[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L2_voltage'])
-                        self.line_L2_current[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L2_current'])
-                        self.line_L2_temperature[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L2_temperature']) 
-                    except:
-                        print("Error while getting load 2 data")
+            if self.plots_toggled[0]:
+                try:
+                    self.line_L1_voltage = self.ax_voltage.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L1_voltage'],
+                        label='Load 1 (V)', color='purple')
+                    self.line_L1_current = self.ax_current.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L1_current'],
+                        label='Load 1 (A)', color='purple')
+                    self.line_L1_temperature = self.ax_temperature.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L1_temperature'],
+                        label='Temperature 1 (°C)', color='purple')
+                except Exception as e:
+                    print(f"Error while getting load 1 data: {e}")
 
-                if(self.plots_toggled[2]):
-                    try:
-                        self.line_L3_voltage[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L3_voltage'])
-                        self.line_L3_current[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L3_current'])
-                        self.line_L3_temperature[0].set_data(self.app_state.latest_data['time'], self.app_state.latest_data['L3_temperature']) 
-                    except:
-                        print("Error while getting load 3 data")
+            if self.plots_toggled[1]:
+                try:
+                    self.line_L2_voltage = self.ax_voltage.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L2_voltage'],
+                        label='Load 2 (V)', color='blue')
+                    self.line_L2_current = self.ax_current.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L2_current'],
+                        label='Load 2 (A)', color='blue')
+                    self.line_L2_temperature = self.ax_temperature.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L2_temperature'],
+                        label='Temperature 2 (°C)', color='blue')
+                except Exception:
+                    print("Error while getting load 2 data")
+
+            if self.plots_toggled[2]:
+                try:
+                    self.line_L3_voltage = self.ax_voltage.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L3_voltage'],
+                        label='Load 3 (V)', color='green')
+                    self.line_L3_current = self.ax_current.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L3_current'],
+                        label='Load 3 (A)', color='green')
+                    self.line_L3_temperature = self.ax_temperature.plot(
+                        self.app_state.latest_data['time'], self.app_state.latest_data['L3_temperature'],
+                        label='Temperature 3 (°C)', color='green')
+                except Exception:
+                    print("Error while getting load 3 data")
+
+            # Restore axes labels, legends, and grids after clearing
+            if any(self.plots_toggled):
+                self.ax_voltage.set_xlabel('Time (s)')
+                self.ax_voltage.set_ylabel('Voltage (V)')
+                self.ax_voltage.legend()
+                self.ax_voltage.grid(True)
+
+                self.ax_current.set_xlabel('Time (s)')
+                self.ax_current.set_ylabel('Current (A)')
+                self.ax_current.legend()
+                self.ax_current.grid(True)
+
+                self.ax_temperature.set_xlabel('Time (s)')
+                self.ax_temperature.set_ylabel('Temperature (°C)')
+                self.ax_temperature.legend()
+                self.ax_temperature.grid(True)
 
         self.ax_voltage.relim()
         self.ax_voltage.autoscale_view()
@@ -143,3 +198,5 @@ class plot_widget(ctk.CTkFrame):
         self.canvas_voltage.flush_events()
         self.canvas_current.flush_events()
         self.canvas_temperature.flush_events()
+
+        self.after(self.update_period, self.update_status)

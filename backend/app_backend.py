@@ -144,7 +144,12 @@ class app_backend:
             self.arduino = serial.Serial(port=port_name, baudrate=self.baud_rate, timeout=0.1)
             self.port_name = port_name
             self.connected = True
-            # print(f"Successfully connected to {port_name}")
+            # Clear data
+            # print("Clearing previous data...")
+            # with self.app_state.lock:
+            #     for key in self.app_state.latest_data:
+            #         self.app_state.latest_data[key] = []
+            print(f"Successfully connected to {port_name}")
             return True
         except serial.SerialException as e:
             self.connected = False
