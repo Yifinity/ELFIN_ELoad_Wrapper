@@ -87,11 +87,12 @@ class TestInfoWidget(ctk.CTkFrame):
                     self.load_tests[self.master.selected_load]["extra_params"] = [
                         float(self.textbox_startpoint.get()),
                         float(self.textbox_current_increment.get()),
-                        float(self.textbox_secs_per_step.get())
+                        float(self.textbox_secs_per_step.get()),
+                        float(self.textbox_voltage_cutoff.get())
                     ]
                 output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},'
                 output_command += f'{self.textbox_target.get()},{self.textbox_startpoint.get()},{self.textbox_current_increment.get()},'
-                output_command += f'{self.textbox_secs_per_step.get()}'
+                output_command += f'{self.textbox_secs_per_step.get()},{self.textbox_voltage_cutoff.get()}'
                 output_command += '>' # End signal
                 self.backend.send_command(output_command)
                 self.update_test_info(self.master.selected_load)
@@ -107,7 +108,7 @@ class TestInfoWidget(ctk.CTkFrame):
             self.load_tests[self.master.selected_load]["test_type"] = 0
             self.load_tests[self.master.selected_load]["target"] = 0
             self.load_tests[self.master.selected_load]["extra_params"] = []
-            output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},0,,,>' # End command
+            output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},0,,,>' # Command to turn everything off
             self.backend.send_command(output_command)
             self.update_test_info(self.master.selected_load)
 
@@ -188,10 +189,11 @@ class TestInfoWidget(ctk.CTkFrame):
             output_string += f"\nTarget: {test_target}"
         else:
             output_string += f"Current Profile: \n"
-            output_string += f"Range: {test_target}-{test_extra_params[0]}A \n"
-            output_string += f"Current Increment: {test_extra_params[1]}\n"
-            output_string += f"Second Per Step: {test_extra_params[2]}\n"
-            output_string += f"Voltage Cutoff: {test_extra_params[3]}"
+            output_string += f"Start Current: {test_extra_params[0]}A \n"
+            output_string += f"Stop Current: {test_target}A \n"
+            output_string += f"Current Increment: {test_extra_params[1]}A \n"
+            output_string += f"Second Per Step: {test_extra_params[2]}s \n"
+            output_string += f"Voltage Cutoff: {test_extra_params[3]}V"
         self.label_test_info.configure(text=output_string)
             
     def clear_textboxes(self):
@@ -217,7 +219,7 @@ class TestInfoWidget(ctk.CTkFrame):
         self.textbox_startpoint.grid_forget()
         self.textbox_current_increment.grid_forget()
         self.textbox_secs_per_step.grid_forget()
-        self.textbox_voltage_cutoff()
+        self.textbox_voltage_cutoff.grid_forget()
 
         self.label_target.grid_forget()
         self.label_startpoint.grid_forget()
@@ -238,7 +240,7 @@ class TestInfoWidget(ctk.CTkFrame):
             self.textbox_startpoint.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
             self.textbox_current_increment.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
             self.textbox_secs_per_step.grid(row=5, column=1, padx=10, pady=5, sticky="ew")
-            self.textbox_voltage_cutoff(row=6, column=1, padx=10, pady=5, sticky="ew")
+            self.textbox_voltage_cutoff.grid(row=6, column=1, padx=10, pady=5, sticky="ew")
 
             self.label_startpoint.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
             self.label_current_increment.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
