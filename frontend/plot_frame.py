@@ -130,44 +130,73 @@ class PlotDisplayFrame(ctk.CTkFrame):
 
     # Update the plot values based on load selections
     def update_plot_values(self, historical_values):
-        if(self.plots_toggled[0]):
+        # Helper: safely set data, trimming to the shortest length if needed
+        def safe_set(line_obj, x, y, label=""):
             try:
-                self.line_L1_voltage[0].set_data(historical_values['time'], historical_values['L1_voltage'])
-                self.line_L1_current[0].set_data(historical_values['time'], historical_values['L1_current'])
-                self.line_L1_temperature[0].set_data(historical_values['time'], historical_values['L1_temperature']) 
-            except:
-                print("Error while getting voltage")
+                if not x or not y:
+                    line_obj[0].set_data([], [])
+                    return
+                lx = len(x)
+                ly = len(y)
+                if lx == ly:
+                    line_obj[0].set_data(x, y)
+                else:
+                    # Trim to the shortest to avoid shape mismatch
+                    m = min(lx, ly)
+                    line_obj[0].set_data(x[-m:], y[-m:])
+                    print(f"Warning: trimmed mismatched lengths for {label} (x={lx}, y={ly})")
+            except Exception as e:
+                print(f"Error setting data for {label}: {e}")
 
-        if(self.plots_toggled[1]):
-            try:
-                self.line_L2_voltage[0].set_data(historical_values['time'], historical_values['L2_voltage'])
-                self.line_L2_current[0].set_data(historical_values['time'], historical_values['L2_current'])
-                self.line_L2_temperature[0].set_data(historical_values['time'], historical_values['L2_temperature']) 
-            except:
-                print("Error while getting current")
+        t = historical_values.get('time', [])
 
-        if(self.plots_toggled[2]):
-            try:
-                self.line_L3_voltage[0].set_data(historical_values['time'], historical_values['L3_voltage'])
-                self.line_L3_current[0].set_data(historical_values['time'], historical_values['L3_current'])
-                self.line_L3_temperature[0].set_data(historical_values['time'], historical_values['L3_temperature']) 
-            except:
-                print("Error while getting temperature")
+        if self.plots_toggled[0]:
+            safe_set(self.line_L1_voltage, t, historical_values.get('L1_voltage', []), 'L1_voltage')
+            safe_set(self.line_L1_current, t, historical_values.get('L1_current', []), 'L1_current')
+            safe_set(self.line_L1_temperature, t, historical_values.get('L1_temperature', []), 'L1_temperature')
 
-        self.ax_voltage.relim()
-        self.ax_voltage.autoscale_view()
+        if self.plots_toggled[1]:
+            safe_set(self.line_L2_voltage, t, historical_values.get('L2_voltage', []), 'L2_voltage')
+            safe_set(self.line_L2_current, t, historical_values.get('L2_current', []), 'L2_current')
+            safe_set(self.line_L2_temperature, t, historical_values.get('L2_temperature', []), 'L2_temperature')
 
-        self.ax_current.relim()
-        self.ax_current.autoscale_view()
+        if self.plots_toggled[2]:
+            safe_set(self.line_L3_voltage, t, historical_values.get('L3_voltage', []), 'L3_voltage')
+            safe_set(self.line_L3_current, t, historical_values.get('L3_current', []), 'L3_current')
+            safe_set(self.line_L3_temperature, t, historical_values.get('L3_temperature', []), 'L3_temperature')
 
-        self.ax_temperature.relim()
-        self.ax_temperature.autoscale_view()
+        # Manually set axis limits based on data to avoid autoscale internals that caused recursion
+        def set_axis_limits(ax, lines):
+            xs = []
+            ys = []
+            for ln in lines:
+                xd, yd = ln[0].get_data()
+                if len(xd) and len(yd):
+                    xs.extend(xd if isinstance(xd, (list, tuple)) else list(xd))
+                    ys.extend(yd if isinstance(yd, (list, tuple)) else list(yd))
+            if xs and ys:
+                try:
+                    xmin, xmax = min(xs), max(xs)
+                    ymin, ymax = min(ys), max(ys)
+                    if xmin == xmax:
+                        xmin -= 0.5
+                        xmax += 0.5
+                    if ymin == ymax:
+                        ymin -= 0.5
+                        ymax += 0.5
+                    ax.set_xlim(xmin, xmax)
+                    ax.set_ylim(ymin, ymax)
+                except Exception as e:
+                    print(f"Error setting axis limits: {e}")
 
-        self.canvas_voltage.draw_idle()
-        self.canvas_current.draw_idle()
-        self.canvas_temperature.draw_idle()
+        set_axis_limits(self.ax_voltage, [self.line_L1_voltage, self.line_L2_voltage, self.line_L3_voltage])
+        set_axis_limits(self.ax_current, [self.line_L1_current, self.line_L2_current, self.line_L3_current])
+        set_axis_limits(self.ax_temperature, [self.line_L1_temperature, self.line_L2_temperature, self.line_L3_temperature])
 
-        # Force Tkinter canvas to update immediately for new plots and redraws
-        self.canvas_voltage.flush_events()
-        self.canvas_current.flush_events()
-        self.canvas_temperature.flush_events()
+        # Trigger redraw
+        try:
+            self.canvas_voltage.draw_idle()
+            self.canvas_current.draw_idle()
+            self.canvas_temperature.draw_idle()
+        except Exception as e:
+            print(f"Error during canvas draw: {e}")
