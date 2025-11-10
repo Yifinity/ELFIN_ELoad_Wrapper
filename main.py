@@ -23,5 +23,6 @@ def on_closing():
     backend.stop_reading_thread() # Close our connection
     app.destroy() 
 
+# kills the process when we close the window
 app.protocol("WM_DELETE_WINDOW", on_closing)
 app.mainloop()
