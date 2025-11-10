@@ -46,11 +46,12 @@ class TestInfoWidget(ctk.CTkFrame):
         self.label_current_increment = ctk.CTkLabel(self, text="Current Increment:")
         # Hold times
         self.label_secs_per_step = ctk.CTkLabel(self, text="Seconds Per Step:")
+        self.label_voltage_cutoff = ctk.CTkLabel(self, text="Voltage Cutoff")
 
         self.textbox_startpoint = ctk.CTkEntry(self, validate="key", validatecommand=(self.register(lambda val: val.isdigit()), "%P")) 
         self.textbox_current_increment = ctk.CTkEntry(self, validate="key", validatecommand=(self.register(lambda val: val.isdigit()), "%P")) 
         self.textbox_secs_per_step = ctk.CTkEntry(self, validate="key", validatecommand=(self.register(lambda val: val.isdigit()), "%P")) 
-
+        self.textbox_voltage_cutoff = ctk.CTkEntry(self, validate="key", validatecommand=(self.register(lambda val: val.isdigit()), "%P"))
         self.clear_textboxes()        
         self.label_test_info.grid_forget() 
         # self.textbox_startpoint.grid_forget()
@@ -84,9 +85,9 @@ class TestInfoWidget(ctk.CTkFrame):
                     if startpoint > 5:
                         raise ValueError("Start Point Current cannot exceed 5A")
                     self.load_tests[self.master.selected_load]["extra_params"] = [
-                        int(self.textbox_startpoint.get()),
-                        int(self.textbox_current_increment.get()),
-                        int(self.textbox_secs_per_step.get())
+                        float(self.textbox_startpoint.get()),
+                        float(self.textbox_current_increment.get()),
+                        float(self.textbox_secs_per_step.get())
                     ]
                 output_command = f'{self.master.selected_load},{self.load_options.index(self.dropdown.get())},'
                 output_command += f'{self.textbox_target.get()},{self.textbox_startpoint.get()},{self.textbox_current_increment.get()},'
@@ -152,11 +153,8 @@ class TestInfoWidget(ctk.CTkFrame):
         if(inputs[0] == "Current Profile"):
             if(not inputs[2].isdigit() or not inputs[3].isdigit() or not inputs[4].isdigit()):
                 return False
-
         return True
         
-
-
 
     def update_test_info(self, load_selection):
         self.label_test_info.grid_forget()
@@ -192,7 +190,8 @@ class TestInfoWidget(ctk.CTkFrame):
             output_string += f"Current Profile: \n"
             output_string += f"Range: {test_target}-{test_extra_params[0]}A \n"
             output_string += f"Current Increment: {test_extra_params[1]}\n"
-            output_string += f"Second Per Step: {test_extra_params[2]}"
+            output_string += f"Second Per Step: {test_extra_params[2]}\n"
+            output_string += f"Voltage Cutoff: {test_extra_params[3]}"
         self.label_test_info.configure(text=output_string)
             
     def clear_textboxes(self):
@@ -204,22 +203,28 @@ class TestInfoWidget(ctk.CTkFrame):
         self.textbox_startpoint.grid_forget()
         self.textbox_current_increment.grid_forget()
         self.textbox_secs_per_step.grid_forget()
+        self.textbox_voltage_cutoff.grid_forget()
 
         self.label_target.grid_forget()
         self.label_startpoint.grid_forget()
         self.label_current_increment.grid_forget()
         self.label_secs_per_step.grid_forget()
+        self.label_voltage_cutoff.grid_forget()
+
 
     def on_dropdown_change(self, selection):
         self.textbox_target.grid_forget()
         self.textbox_startpoint.grid_forget()
         self.textbox_current_increment.grid_forget()
         self.textbox_secs_per_step.grid_forget()
+        self.textbox_voltage_cutoff()
 
         self.label_target.grid_forget()
         self.label_startpoint.grid_forget()
         self.label_current_increment.grid_forget()
         self.label_secs_per_step.grid_forget()
+        self.label_voltage_cutoff.grid_forget()
+        
 
         self.textbox_target.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
         self.label_target.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
@@ -233,11 +238,12 @@ class TestInfoWidget(ctk.CTkFrame):
             self.textbox_startpoint.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
             self.textbox_current_increment.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
             self.textbox_secs_per_step.grid(row=5, column=1, padx=10, pady=5, sticky="ew")
+            self.textbox_voltage_cutoff(row=6, column=1, padx=10, pady=5, sticky="ew")
 
             self.label_startpoint.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
             self.label_current_increment.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
             self.label_secs_per_step.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
-
+            self.label_voltage_cutoff.grid(row=6, column=0, padx=10, pady=5, sticky="ew")
 
 
             
